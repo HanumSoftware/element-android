@@ -180,7 +180,15 @@ interface RoomService {
      */
     fun peekRoom(roomIdOrAlias: String, callback: MatrixCallback<PeekResult>)
 
-    fun getFlattenRoomSummaryChildOf(spaceId: String?, memberships: List<Membership> = Membership.activeMemberships()) : List<RoomSummary>
+    /**
+     * Returns all the children of this space
+     */
+    fun getFlattenRoomSummaryChildrenOf(spaceId: String?,
+                                        memberships: List<Membership> = Membership.activeMemberships()) : List<RoomSummary>
 
-    fun getFlattenRoomSummaryChildOfLive(spaceId: String?, memberships: List<Membership> = Membership.activeMemberships()): LiveData<List<RoomSummary>>
+    /**
+     * Returns all the children of this space, as LiveData
+     */
+    fun getFlattenRoomSummaryChildrenOfLive(spaceId: String?,
+                                            memberships: List<Membership> = Membership.activeMemberships()): LiveData<List<RoomSummary>>
 }

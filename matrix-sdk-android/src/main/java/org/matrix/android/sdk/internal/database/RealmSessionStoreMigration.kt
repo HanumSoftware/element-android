@@ -153,8 +153,8 @@ class RealmSessionStoreMigration @Inject constructor() : RealmMigration {
                 ?.addRealmListField(EditAggregatedSummaryEntityFields.EDITIONS.`$`, editionOfEventSchema)
     }
 
-    fun migrateTo9(realm: DynamicRealm) {
-        Timber.d("Step 7 -> 8")
+    private fun migrateTo9(realm: DynamicRealm) {
+        Timber.d("Step 8 -> 9")
         realm.schema.create("SpaceChildSummaryEntity")
                 ?.addField(SpaceChildSummaryEntityFields.ORDER, String::class.java)
                 ?.addField(SpaceChildSummaryEntityFields.CHILD_ROOM_ID, String::class.java)

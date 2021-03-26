@@ -163,7 +163,7 @@ class AppStateHandler @Inject constructor(
                                                 }
                                             }
 
-                                            val rooms = currentSession.getFlattenRoomSummaryChildOf(
+                                            val rooms = currentSession.getFlattenRoomSummaryChildrenOf(
                                                     currentSpace?.roomId?.takeIf { it != ALL_COMMUNITIES_GROUP_ID }
                                             )
                                             (filteredDm + rooms).sortedWith(chronologicalRoomComparator)
