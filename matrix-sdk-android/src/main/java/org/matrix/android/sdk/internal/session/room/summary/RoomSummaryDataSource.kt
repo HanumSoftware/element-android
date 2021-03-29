@@ -91,9 +91,8 @@ internal class RoomSummaryDataSource @Inject constructor(@SessionDatabase privat
     }
 
     fun getSpaceSummary(roomIdOrAlias: String): RoomSummary? {
-        return getRoomSummary(roomIdOrAlias).let {
-            it?.takeIf { it.roomType == RoomType.SPACE }
-        }
+        return getRoomSummary(roomIdOrAlias)
+                ?.takeIf { it.roomType == RoomType.SPACE }
     }
 
     fun getSpaceSummaryLive(roomId: String): LiveData<Optional<RoomSummary>> {

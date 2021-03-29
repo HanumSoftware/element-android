@@ -96,5 +96,8 @@ interface Room :
                includeProfile: Boolean,
                callback: MatrixCallback<SearchResult>): Cancelable
 
+    /**
+     * Use this room as a Space, if the type is correct.
+     */
     fun asSpace(): Space?
 }
