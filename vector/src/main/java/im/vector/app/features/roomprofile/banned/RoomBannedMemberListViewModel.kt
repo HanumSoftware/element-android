@@ -73,10 +73,12 @@ class RoomBannedMemberListViewModel @AssistedInject constructor(@Assisted initia
 
         val powerLevelsContentLive = PowerLevelsObservableFactory(room).createObservable()
 
-        powerLevelsContentLive.subscribe {
-            val powerLevelsHelper = PowerLevelsHelper(it)
-            setState { copy(canUserBan = powerLevelsHelper.isUserAbleToBan(session.myUserId)) }
-        }.disposeOnClear()
+        powerLevelsContentLive
+                .subscribe {
+                    val powerLevelsHelper = PowerLevelsHelper(it)
+                    setState { copy(canUserBan = powerLevelsHelper.isUserAbleToBan(session.myUserId)) }
+                }
+                .disposeOnClear()
     }
 
     companion object : MvRxViewModelFactory<RoomBannedMemberListViewModel, RoomBannedMemberListViewState> {

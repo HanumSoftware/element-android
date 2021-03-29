@@ -126,7 +126,8 @@ class MessageActionsViewModel @AssistedInject constructor(@Assisted
                     setState {
                         copy(actionPermissions = permissions)
                     }
-                }.disposeOnClear()
+                }
+                .disposeOnClear()
     }
 
     private fun observeEvent() {

@@ -74,7 +74,7 @@ class RoomListViewModel @Inject constructor(initialState: RoomListViewState,
                 .observeOn(Schedulers.computation())
                 .execute { info ->
                     copy(asyncSuggestedRooms = info)
-                }.disposeOnClear()
+                }
 
         selectedSpaceDataSource.observe()
                 .map { it.orNull() }
@@ -97,16 +97,16 @@ class RoomListViewModel @Inject constructor(initialState: RoomListViewState,
 
     override fun handle(action: RoomListAction) {
         when (action) {
-            is RoomListAction.SelectRoom -> handleSelectRoom(action)
-            is RoomListAction.ToggleCategory -> handleToggleCategory(action)
-            is RoomListAction.AcceptInvitation -> handleAcceptInvitation(action)
-            is RoomListAction.RejectInvitation -> handleRejectInvitation(action)
-            is RoomListAction.FilterWith -> handleFilter(action)
-            is RoomListAction.MarkAllRoomsRead -> handleMarkAllRoomsRead()
-            is RoomListAction.LeaveRoom -> handleLeaveRoom(action)
+            is RoomListAction.SelectRoom                  -> handleSelectRoom(action)
+            is RoomListAction.ToggleCategory              -> handleToggleCategory(action)
+            is RoomListAction.AcceptInvitation            -> handleAcceptInvitation(action)
+            is RoomListAction.RejectInvitation            -> handleRejectInvitation(action)
+            is RoomListAction.FilterWith                  -> handleFilter(action)
+            is RoomListAction.MarkAllRoomsRead            -> handleMarkAllRoomsRead()
+            is RoomListAction.LeaveRoom                   -> handleLeaveRoom(action)
             is RoomListAction.ChangeRoomNotificationState -> handleChangeNotificationMode(action)
-            is RoomListAction.ToggleTag -> handleToggleTag(action)
-            is RoomListAction.JoinSuggestedRoom -> handleJoinSuggestedRoom(action)
+            is RoomListAction.ToggleTag                   -> handleToggleTag(action)
+            is RoomListAction.JoinSuggestedRoom           -> handleJoinSuggestedRoom(action)
         }.exhaustive
     }
 
@@ -275,7 +275,7 @@ class RoomListViewModel @Inject constructor(initialState: RoomListViewState,
 
     private fun String.otherTag(): String? {
         return when (this) {
-            RoomTag.ROOM_TAG_FAVOURITE -> RoomTag.ROOM_TAG_LOW_PRIORITY
+            RoomTag.ROOM_TAG_FAVOURITE    -> RoomTag.ROOM_TAG_LOW_PRIORITY
             RoomTag.ROOM_TAG_LOW_PRIORITY -> RoomTag.ROOM_TAG_FAVOURITE
             else                          -> null
         }
