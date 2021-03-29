@@ -24,7 +24,7 @@ import im.vector.app.core.epoxy.helpFooterItem
 import im.vector.app.core.resources.ColorProvider
 import im.vector.app.core.resources.StringProvider
 import im.vector.app.core.resources.UserPreferencesProvider
-import im.vector.app.core.ui.list.GenericItem
+import im.vector.app.core.ui.list.ItemStyle
 import im.vector.app.core.ui.list.genericFooterItem
 import im.vector.app.features.home.RoomListDisplayMode
 import im.vector.app.features.home.room.filtered.FilteredRoomFooterItem
@@ -124,7 +124,7 @@ class RoomSummaryController @Inject constructor(private val stringProvider: Stri
                     genericFooterItem {
                         id("empty_suggested_header")
                         centered(false)
-                        style(GenericItem.STYLE.TITLE)
+                        style(ItemStyle.TITLE)
                         text(stringProvider.getString(
                                 R.string.suggested_rooms_pills_on_empty_header,
                                 viewState.currentSpace.invoke()?.name,
