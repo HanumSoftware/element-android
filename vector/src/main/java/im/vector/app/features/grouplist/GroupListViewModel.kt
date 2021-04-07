@@ -22,9 +22,14 @@ import arrow.core.Option
 import com.airbnb.mvrx.FragmentViewModelContext
 import com.airbnb.mvrx.MvRxViewModelFactory
 import com.airbnb.mvrx.ViewModelContext
-import com.squareup.inject.assisted.Assisted
-import com.squareup.inject.assisted.AssistedInject
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import im.vector.app.API
+import im.vector.app.ContextInjector
+import im.vector.app.LogEventBody
 import im.vector.app.R
+import im.vector.app.core.di.DefaultSharedPreferences
 import im.vector.app.core.platform.VectorViewModel
 import im.vector.app.core.resources.StringProvider
 import io.reactivex.Observable
@@ -45,7 +50,7 @@ class GroupListViewModel @AssistedInject constructor(@Assisted initialState: Gro
                                                      private val stringProvider: StringProvider
 ) : VectorViewModel<GroupListViewState, GroupListAction, GroupListViewEvents>(initialState) {
 
-    @AssistedInject.Factory
+    @AssistedFactory
     interface Factory {
         fun create(initialState: GroupListViewState): GroupListViewModel
     }
@@ -113,6 +118,24 @@ class GroupListViewModel @AssistedInject constructor(@Assisted initialState: Gro
                         .rx()
                         .liveUser(session.myUserId)
                         .map { optionalUser ->
+
+                            if (session.isOpenable) {
+
+                                val prefs = ContextInjector.applicationContext?.let { DefaultSharedPreferences.getInstance(it) }
+
+                                if (prefs?.getBoolean("profiledetails_first", true) == true) {
+
+                                    with(prefs.edit()) {
+                                        putBoolean("profiledetails_first", false)
+                                        apply()
+                                    }
+                                    API.performLogEvent(LogEventBody("profiledetails_first", session.myUserId, 15))
+                                } else {
+                                    API.performLogEvent(LogEventBody("profiledetails", session.myUserId, 3))
+                                }
+                            }
+
+
                             GroupSummary(
                                     groupId = ALL_COMMUNITIES_GROUP_ID,
                                     membership = Membership.JOIN,

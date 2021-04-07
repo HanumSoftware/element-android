@@ -61,7 +61,7 @@ class PublicRoomsFragment @Inject constructor(
         return FragmentPublicRoomsBinding.inflate(inflater, container, false)
     }
 
-    override fun getMenuRes() = R.menu.menu_room_directory
+//    override fun getMenuRes() = R.menu.menu_room_directory
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -106,17 +106,17 @@ class PublicRoomsFragment @Inject constructor(
         views.publicRoomsList.cleanup()
         super.onDestroyView()
     }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.menu_room_directory_change_protocol -> {
-                sharedActionViewModel.post(RoomDirectorySharedAction.ChangeProtocol)
-                true
-            }
-            else                                     ->
-                super.onOptionsItemSelected(item)
-        }
-    }
+//
+//    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+//        return when (item.itemId) {
+//            R.id.menu_room_directory_change_protocol -> {
+//                sharedActionViewModel.post(RoomDirectorySharedAction.ChangeProtocol)
+//                true
+//            }
+//            else                                     ->
+//                super.onOptionsItemSelected(item)
+//        }
+//    }
 
     private fun setupRecyclerView() {
         views.publicRoomsList.trackItemsVisibilityChange()

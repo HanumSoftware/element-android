@@ -90,9 +90,9 @@
     <string name="notice_widget_removed_by_you">Du tog bort %1$s-widget</string>
     <string name="notice_widget_modified">%1$s modifierade %2$s-widget</string>
     <string name="notice_widget_modified_by_you">Du modifierade %1$s-widget</string>
-    <string name="power_level_admin">Admin</string>
-    <string name="power_level_moderator">Moderator</string>
-    <string name="power_level_default">Standard</string>
+    <string name="power_level_admin">מנהל</string>
+    <string name="power_level_moderator">עורך</string>
+    <string name="power_level_default">רגיל</string>
     <string name="power_level_custom">Anpassad (%1$d)</string>
     <string name="power_level_custom_no_value">Anpassad</string>
     <string name="notice_power_level_changed_by_you">Du ändrade behörighetsnivå för %1$s.</string>
@@ -213,4 +213,49 @@
     <string name="notice_direct_room_join">%1$s gick med</string>
     <string name="notice_direct_room_created_by_you">Du skapade diskussionen</string>
     <string name="notice_direct_room_created">%1$s skapade diskussionen</string>
+    <string name="notice_room_canonical_alias_no_change_by_you">Du ändrade adresserna för det här rummet.</string>
+    <string name="notice_room_canonical_alias_no_change">%1$s ändrade adresserna för det här rummet.</string>
+    <string name="notice_room_canonical_alias_main_and_alternative_changed_by_you">Du ändrade huvudadressen och de alternativa adresserna för det här rummet.</string>
+    <string name="notice_room_canonical_alias_main_and_alternative_changed">%1$s ändrade huvudadressen och de alternativa adresserna för det här rummet.</string>
+    <string name="notice_room_canonical_alias_alternative_changed_by_you">Du ändrade de alternativa adresserna för det här rummet.</string>
+    <string name="notice_room_canonical_alias_alternative_changed">%1$s ändrade de alternativa adresserna för det här rummet.</string>
+    <plurals name="notice_room_canonical_alias_alternative_removed_by_you">
+        <item quantity="one">Du tog bort den alternativa adressen %1$s för det här rummet.</item>
+        <item quantity="other">Du tog bort de alternativa adresserna %1$s för det här rummet.</item>
+    </plurals>
+    <plurals name="notice_room_canonical_alias_alternative_removed">
+        <item quantity="one">%1$s tog bort den alternativa adressen %2$s för det här rummet.</item>
+        <item quantity="other">%1$s tog bort de alternativa adresserna %2$s för det här rummet.</item>
+    </plurals>
+    <plurals name="notice_room_canonical_alias_alternative_added_by_you">
+        <item quantity="one">Du lade till den alternativa adressen %1$s för det här rummet.</item>
+        <item quantity="other">Du lade till de alternativa adresserna %1$s för det här rummet.</item>
+    </plurals>
+    <plurals name="notice_room_canonical_alias_alternative_added">
+        <item quantity="one">%1$s lade till den alternativa adressen %2$s för det här rummet.</item>
+        <item quantity="other">%1$s lade till de alternativa adresserna %2$s för det här rummet.</item>
+    </plurals>
+    <string name="room_displayname_empty_room_was">Tomt rum (var %s)</string>
+    <plurals name="room_displayname_four_and_more_members">
+        <item quantity="one">%1$s, %2$s, %3$s och %4$d till</item>
+        <item quantity="other">%1$s, %2$s, %3$s och %4$d till</item>
+    </plurals>
+    <string name="room_displayname_4_members">%1$s, %2$s, %3$s och %4$s</string>
+    <string name="room_displayname_3_members">%1$s, %2$s och %3$s</string>
+    <string name="notice_room_server_acl_allow_is_empty">🎉 Alla servrar har bannats från att delta! Det här rummet kan inte användas längre.</string>
+    <string name="notice_room_server_acl_updated_no_change">Ingen ändring.</string>
+    <string name="notice_room_server_acl_updated_ip_literals_not_allowed">• Servrar som matchar IP-adresser är nu bannade.</string>
+    <string name="notice_room_server_acl_updated_ip_literals_allowed">• Servrar som matchar IP-adresser är nu tillåtna.</string>
+    <string name="notice_room_server_acl_updated_was_allowed">• Servrar som matchar %s togs bort från tillåtelselistan.</string>
+    <string name="notice_room_server_acl_updated_allowed">• Servrar som matchar %s är nu tillåtna.</string>
+    <string name="notice_room_server_acl_updated_was_banned">• Servrar som matchar %s togs bort från bannlistan.</string>
+    <string name="notice_room_server_acl_updated_banned">• Servrar som matchar %s är nu bannade.</string>
+    <string name="notice_room_server_acl_updated_title_by_you">Du ändrade server-ACLer för det här rummet.</string>
+    <string name="notice_room_server_acl_updated_title">%s ändrade server-ACLer för det här rummet.</string>
+    <string name="notice_room_server_acl_set_ip_literals_allowed">• Servrar som matchar IP-adresser är tillåtna.</string>
+    <string name="notice_room_server_acl_set_ip_literals_not_allowed">• Servrar som matchar IP-adresser är bannade.</string>
+    <string name="notice_room_server_acl_set_allowed">• Servrar som matchar %s är tillåtna.</string>
+    <string name="notice_room_server_acl_set_banned">• Servrar som matchar %s är bannade.</string>
+    <string name="notice_room_server_acl_set_title_by_you">Du satte server-ACLer för det här rummet.</string>
+    <string name="notice_room_server_acl_set_title">%s satte server-ACLer för det här rummet.</string>
 </resources>

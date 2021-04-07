@@ -52,7 +52,6 @@
             android:dependency="SETTINGS_USE_RAGE_SHAKE_KEY"
             android:key="SETTINGS_RAGE_SHAKE_DETECTION_THRESHOLD_KEY"
             android:max="15"
-            android:summary="@string/settings_rageshake_detection_threshold_summary"
             android:title="@string/settings_rageshake_detection_threshold"
             app:min="11" />
 

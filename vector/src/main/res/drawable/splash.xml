@@ -5,13 +5,13 @@
     android:opacity="opaque">
 
     <!-- Background color -->
-    <item android:drawable="@color/riotx_accent" />
+    <item android:drawable="@color/white" />
 
     <!-- Centered logo -->
-    <item>
-        <bitmap
-            android:gravity="center"
-            android:src="@drawable/riot_splash_white" />
-    </item>
+<!--    <item>-->
+<!--        <bitmap-->
+<!--            android:gravity="center"-->
+<!--            android:src="@drawable/logo_animation" />-->
+<!--    </item>-->
 
 </layer-list>

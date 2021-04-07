@@ -23,6 +23,7 @@ import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import com.yalantis.ucrop.UCrop
 import im.vector.app.R
+import im.vector.app.core.dialogs.GalleryOrCameraDialogHelper.Listener
 import im.vector.app.core.extensions.insertBeforeLast
 import im.vector.app.core.extensions.registerStartForActivityResult
 import im.vector.app.core.resources.ColorProvider
@@ -103,19 +104,19 @@ class GalleryOrCameraDialogHelper(
     fun show() {
         AlertDialog.Builder(activity)
                 .setTitle(R.string.attachment_type_dialog_title)
+                .setCancelable(true)
                 .setItems(arrayOf(
                         fragment.getString(R.string.attachment_type_camera),
                         fragment.getString(R.string.attachment_type_gallery)
                 )) { _, which ->
                     onAvatarTypeSelected(if (which == 0) Type.Camera else Type.Gallery)
                 }
-                .setPositiveButton(R.string.cancel, null)
                 .show()
     }
 
     private fun onAvatarTypeSelected(type: Type) {
         when (type) {
-            Type.Camera ->
+            Type.Camera  ->
                 if (checkPermissions(PERMISSIONS_FOR_TAKING_PHOTO, activity, takePhotoPermissionActivityResultLauncher)) {
                     doOpenCamera()
                 }

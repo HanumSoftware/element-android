@@ -91,17 +91,17 @@ class DeviceVerificationInfoBottomSheetController @Inject constructor(
                 }
             } else if (data.canVerifySession) {
                 // You need to complete security, only if there are other session(s) available, or if 4S contains secrets
-                genericItem {
-                    id("trust${cryptoDeviceInfo.deviceId}")
-                    style(GenericItem.STYLE.BIG_TEXT)
-                    titleIconResourceId(shield)
-                    title(stringProvider.getString(R.string.crosssigning_verify_this_session))
-                    if (data.hasOtherSessions) {
-                        description(stringProvider.getString(R.string.confirm_your_identity))
-                    } else {
-                        description(stringProvider.getString(R.string.confirm_your_identity_quad_s))
-                    }
-                }
+//                genericItem {
+//                    id("trust${cryptoDeviceInfo.deviceId}")
+//                    style(GenericItem.STYLE.BIG_TEXT)
+//                    titleIconResourceId(shield)
+//                    title(stringProvider.getString(R.string.crosssigning_verify_this_session))
+//                    if (data.hasOtherSessions) {
+//                        description(stringProvider.getString(R.string.confirm_your_identity))
+//                    } else {
+//                        description(stringProvider.getString(R.string.confirm_your_identity_quad_s))
+//                    }
+//                }
             }
         } else {
             if (!currentSessionIsTrusted) {

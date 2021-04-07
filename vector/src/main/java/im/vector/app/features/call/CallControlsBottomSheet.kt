@@ -58,11 +58,6 @@ class CallControlsBottomSheet : VectorBaseBottomSheetDialogFragment<BottomSheetC
             dismiss()
         }
 
-        views.callControlsToggleHoldResume.views.itemVerificationClickableZone.debouncedClicks {
-            callViewModel.handle(VectorCallViewActions.ToggleHoldResume)
-            dismiss()
-        }
-
         callViewModel.observeViewEvents {
             when (it) {
                 is VectorCallViewEvents.ShowSoundDeviceChooser -> {
@@ -81,15 +76,15 @@ class CallControlsBottomSheet : VectorBaseBottomSheetDialogFragment<BottomSheetC
                     text = getString(R.string.sound_device_wireless_headset)
                     textStyle = if (current == it) "bold" else "normal"
                 }
-                CallAudioManager.SoundDevice.PHONE -> span {
+                CallAudioManager.SoundDevice.PHONE            -> span {
                     text = getString(R.string.sound_device_phone)
                     textStyle = if (current == it) "bold" else "normal"
                 }
-                CallAudioManager.SoundDevice.SPEAKER -> span {
+                CallAudioManager.SoundDevice.SPEAKER          -> span {
                     text = getString(R.string.sound_device_speaker)
                     textStyle = if (current == it) "bold" else "normal"
                 }
-                CallAudioManager.SoundDevice.HEADSET -> span {
+                CallAudioManager.SoundDevice.HEADSET          -> span {
                     text = getString(R.string.sound_device_headset)
                     textStyle = if (current == it) "bold" else "normal"
                 }
@@ -100,13 +95,13 @@ class CallControlsBottomSheet : VectorBaseBottomSheetDialogFragment<BottomSheetC
                     d.cancel()
                     when (soundDevices[n].toString()) {
                         // TODO Make an adapter and handle multiple Bluetooth headsets. Also do not use translations.
-                        getString(R.string.sound_device_phone) -> {
+                        getString(R.string.sound_device_phone)            -> {
                             callViewModel.handle(VectorCallViewActions.ChangeAudioDevice(CallAudioManager.SoundDevice.PHONE))
                         }
-                        getString(R.string.sound_device_speaker) -> {
+                        getString(R.string.sound_device_speaker)          -> {
                             callViewModel.handle(VectorCallViewActions.ChangeAudioDevice(CallAudioManager.SoundDevice.SPEAKER))
                         }
-                        getString(R.string.sound_device_headset) -> {
+                        getString(R.string.sound_device_headset)          -> {
                             callViewModel.handle(VectorCallViewActions.ChangeAudioDevice(CallAudioManager.SoundDevice.HEADSET))
                         }
                         getString(R.string.sound_device_wireless_headset) -> {
@@ -143,15 +138,6 @@ class CallControlsBottomSheet : VectorBaseBottomSheetDialogFragment<BottomSheetC
             }
         } else {
             views.callControlsToggleSDHD.isVisible = false
-        }
-        if (state.isRemoteOnHold) {
-            views.callControlsToggleHoldResume.title = getString(R.string.call_resume_action)
-            views.callControlsToggleHoldResume.subTitle = null
-            views.callControlsToggleHoldResume.leftIcon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_call_resume_action)
-        } else {
-            views.callControlsToggleHoldResume.title = getString(R.string.call_hold_action)
-            views.callControlsToggleHoldResume.subTitle = null
-            views.callControlsToggleHoldResume.leftIcon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_call_hold_action)
         }
     }
 }

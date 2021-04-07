@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "249344713849",
+    "project_id": "gidonline-eefb8",
+    "storage_bucket": "gidonline-eefb8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:249344713849:android:57cbe545cf6bb2cf72e0a8",
+        "android_client_info": {
+          "package_name": "com.elekt.gidonline.android"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "249344713849-tik6k2ctsb32n1h1jbug8907nbfd7l60.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDqKh2cVPxq3QmbL-IyGxnYFNuvM_p5Aws"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "249344713849-tik6k2ctsb32n1h1jbug8907nbfd7l60.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

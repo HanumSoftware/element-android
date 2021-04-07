@@ -18,42 +18,40 @@ package im.vector.app.features.call
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import im.vector.app.features.call.webrtc.WebRtcCall
-import im.vector.app.features.call.webrtc.WebRtcCallManager
 import org.matrix.android.sdk.api.session.call.MxCall
 import javax.inject.Inject
 
 class SharedActiveCallViewModel @Inject constructor(
-        private val callManager: WebRtcCallManager
+        private val webRtcPeerConnectionManager: WebRtcPeerConnectionManager
 ) : ViewModel() {
 
-    val activeCall: MutableLiveData<WebRtcCall?> = MutableLiveData()
+    val activeCall: MutableLiveData<MxCall?> = MutableLiveData()
 
-    val callStateListener = object : WebRtcCall.Listener {
+    val callStateListener = object : MxCall.StateListener {
 
         override fun onStateUpdate(call: MxCall) {
             if (activeCall.value?.callId == call.callId) {
-                activeCall.postValue(callManager.getCallById(call.callId))
+                activeCall.postValue(call)
             }
         }
     }
 
-    private val listener = object : WebRtcCallManager.CurrentCallListener {
-        override fun onCurrentCallChange(call: WebRtcCall?) {
-            activeCall.value?.mxCall?.removeListener(callStateListener)
+    private val listener = object : WebRtcPeerConnectionManager.CurrentCallListener {
+        override fun onCurrentCallChange(call: MxCall?) {
+            activeCall.value?.removeListener(callStateListener)
             activeCall.postValue(call)
             call?.addListener(callStateListener)
         }
     }
 
     init {
-        activeCall.postValue(callManager.currentCall)
-        callManager.addCurrentCallListener(listener)
+        activeCall.postValue(webRtcPeerConnectionManager.currentCall?.mxCall)
+        webRtcPeerConnectionManager.addCurrentCallListener(listener)
     }
 
     override fun onCleared() {
         activeCall.value?.removeListener(callStateListener)
-        callManager.removeCurrentCallListener(listener)
+        webRtcPeerConnectionManager.removeCurrentCallListener(listener)
         super.onCleared()
     }
 }

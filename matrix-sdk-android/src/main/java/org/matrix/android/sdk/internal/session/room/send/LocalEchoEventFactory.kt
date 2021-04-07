@@ -431,10 +431,10 @@ internal class LocalEchoEventFactory @Inject constructor(
                     TextContent(content.body, formattedText)
                 }
             }
-            MessageType.MSGTYPE_FILE   -> return TextContent("sent a file.")
-            MessageType.MSGTYPE_AUDIO  -> return TextContent("sent an audio file.")
-            MessageType.MSGTYPE_IMAGE  -> return TextContent("sent an image.")
-            MessageType.MSGTYPE_VIDEO  -> return TextContent("sent a video.")
+            MessageType.MSGTYPE_FILE   -> return TextContent("שלח קובץ.")
+            MessageType.MSGTYPE_AUDIO  -> return TextContent("שלח קובץ קולי.")
+            MessageType.MSGTYPE_IMAGE  -> return TextContent("שלח תמונה.")
+            MessageType.MSGTYPE_VIDEO  -> return TextContent("שלח וידאו.")
             else                       -> return TextContent(content?.body ?: "")
         }
     }
@@ -484,7 +484,7 @@ internal class LocalEchoEventFactory @Inject constructor(
         //     </blockquote>
         // </mx-reply>
         // No whitespace because currently breaks temporary formatted text to Span
-        const val REPLY_PATTERN = """<mx-reply><blockquote><a href="%s">In reply to</a> <a href="%s">%s</a><br />%s</blockquote></mx-reply>%s"""
+        const val REPLY_PATTERN = """<mx-reply><blockquote><a href="%s">בתגובה ל</a> <a href="%s">%s</a><br />%s</blockquote></mx-reply>%s"""
 
         // This is used to replace inner mx-reply tags
         val MX_REPLY_REGEX = "<mx-reply>.*</mx-reply>".toRegex()

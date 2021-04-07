@@ -11,10 +11,6 @@
 
         <LinearLayout style="@style/LoginFormContainer">
 
-            <ImageView
-                style="@style/LoginLogo"
-                tools:ignore="ContentDescription" />
-
             <TextView
                 android:id="@+id/loginGenericTextInputFormTitle"
                 android:layout_width="wrap_content"

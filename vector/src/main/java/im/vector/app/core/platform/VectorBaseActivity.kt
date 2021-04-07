@@ -171,6 +171,7 @@ abstract class VectorBaseActivity<VB: ViewBinding> : AppCompatActivity(), HasScr
 
     @CallSuper
     override fun onCreate(savedInstanceState: Bundle?) {
+        window.decorView.layoutDirection = View.LAYOUT_DIRECTION_RTL;
         Timber.i("onCreate Activity ${javaClass.simpleName}")
         val vectorComponent = getVectorComponent()
         screenComponent = DaggerScreenComponent.factory().create(vectorComponent, this)

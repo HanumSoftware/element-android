@@ -25,14 +25,14 @@ import com.airbnb.mvrx.Success
 import com.airbnb.mvrx.ViewModelContext
 import com.jakewharton.rxrelay2.BehaviorRelay
 import com.jakewharton.rxrelay2.PublishRelay
-import com.squareup.inject.assisted.Assisted
-import com.squareup.inject.assisted.AssistedInject
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
+import dagger.assisted.AssistedFactory
 import im.vector.app.R
 import im.vector.app.core.extensions.exhaustive
 import im.vector.app.core.platform.VectorViewModel
 import im.vector.app.core.resources.StringProvider
-import im.vector.app.core.utils.subscribeLogError
-import im.vector.app.features.call.webrtc.WebRtcCallManager
+import im.vector.app.features.call.WebRtcPeerConnectionManager
 import im.vector.app.features.command.CommandParser
 import im.vector.app.features.command.ParsedCommand
 import im.vector.app.features.crypto.verification.SupportedVerificationMethodsProvider
@@ -113,7 +113,7 @@ class RoomDetailViewModel @AssistedInject constructor(
         private val stickerPickerActionHandler: StickerPickerActionHandler,
         private val roomSummaryHolder: RoomSummaryHolder,
         private val typingHelper: TypingHelper,
-        private val callManager: WebRtcCallManager,
+        private val webRtcPeerConnectionManager: WebRtcPeerConnectionManager,
         private val chatEffectManager: ChatEffectManager,
         timelineSettingsFactory: TimelineSettingsFactory
 ) : VectorViewModel<RoomDetailViewState, RoomDetailAction, RoomDetailViewEvents>(initialState), Timeline.Listener, ChatEffectManager.Delegate {
@@ -135,7 +135,7 @@ class RoomDetailViewModel @AssistedInject constructor(
     private var trackUnreadMessages = AtomicBoolean(false)
     private var mostRecentDisplayedEvent: TimelineEvent? = null
 
-    @AssistedInject.Factory
+    @AssistedFactory
     interface Factory {
         fun create(initialState: RoomDetailViewState): RoomDetailViewModel
     }
@@ -168,7 +168,6 @@ class RoomDetailViewModel @AssistedInject constructor(
         observePowerLevel()
         room.getRoomSummaryLive()
         room.markAsRead(ReadService.MarkAsReadParams.READ_RECEIPT, NoOpMatrixCallback())
-        room.rx().loadRoomMembersIfNeeded().subscribeLogError().disposeOnClear()
         // Inform the SDK that the room is displayed
         session.onRoomDisplayed(initialState.roomId)
         chatEffectManager.delegate = this
@@ -265,7 +264,6 @@ class RoomDetailViewModel @AssistedInject constructor(
             is RoomDetailAction.SelectStickerAttachment          -> handleSelectStickerAttachment()
             is RoomDetailAction.OpenIntegrationManager           -> handleOpenIntegrationManager()
             is RoomDetailAction.StartCall                        -> handleStartCall(action)
-            is RoomDetailAction.AcceptCall                       -> handleAcceptCall(action)
             is RoomDetailAction.EndCall                          -> handleEndCall()
             is RoomDetailAction.ManageIntegrations               -> handleManageIntegrations()
             is RoomDetailAction.AddJitsiWidget                   -> handleAddJitsiConference(action)
@@ -285,12 +283,6 @@ class RoomDetailViewModel @AssistedInject constructor(
             }
             is RoomDetailAction.DoNotShowPreviewUrlFor           -> handleDoNotShowPreviewUrlFor(action)
         }.exhaustive
-    }
-
-    private fun handleAcceptCall(action: RoomDetailAction.AcceptCall) {
-        callManager.getCallById(action.callId)?.also {
-            _viewEvents.post(RoomDetailViewEvents.DisplayAndAcceptCall(it))
-        }
     }
 
     private fun handleDoNotShowPreviewUrlFor(action: RoomDetailAction.DoNotShowPreviewUrlFor) {
@@ -344,12 +336,12 @@ class RoomDetailViewModel @AssistedInject constructor(
 
     private fun handleStartCall(action: RoomDetailAction.StartCall) {
         room.roomSummary()?.otherMemberIds?.firstOrNull()?.let {
-            callManager.startOutgoingCall(room.roomId, it, action.isVideo)
+            webRtcPeerConnectionManager.startOutgoingCall(room.roomId, it, action.isVideo)
         }
     }
 
     private fun handleEndCall() {
-        callManager.endCall()
+        webRtcPeerConnectionManager.endCall()
     }
 
     private fun handleSelectStickerAttachment() {
@@ -604,12 +596,12 @@ class RoomDetailViewModel @AssistedInject constructor(
             R.id.timeline_setting -> true
             R.id.invite           -> state.canInvite
             R.id.clear_all        -> state.asyncRoomSummary()?.hasFailedSending == true
-            R.id.open_matrix_apps -> true
+            R.id.open_matrix_apps -> false
             R.id.voice_call,
-            R.id.video_call          -> callManager.getCallsByRoomId(state.roomId).isEmpty()
-            R.id.hangup_call         -> callManager.getCallsByRoomId(state.roomId).isNotEmpty()
-            R.id.search              -> true
-            else                     -> false
+            R.id.video_call       -> true // always show for discoverability
+            R.id.hangup_call      -> webRtcPeerConnectionManager.currentCall != null
+            R.id.search           -> false
+            else                  -> false
         }
     }
 
@@ -896,13 +888,15 @@ class RoomDetailViewModel @AssistedInject constructor(
     }
 
     private fun handleSetUserPowerLevel(setUserPowerLevel: ParsedCommand.SetUserPowerLevel) {
-        val currentPowerLevelsContent = room.getStateEvent(EventType.STATE_ROOM_POWER_LEVELS)
+        val newPowerLevelsContent = room.getStateEvent(EventType.STATE_ROOM_POWER_LEVELS)
                 ?.content
-                ?.toModel<PowerLevelsContent>() ?: return
+                ?.toModel<PowerLevelsContent>()
+                ?.setUserPowerLevel(setUserPowerLevel.userId, setUserPowerLevel.powerLevel)
+                ?.toContent()
+                ?: return
 
         launchSlashCommandFlowSuspendable {
-            currentPowerLevelsContent.setUserPowerLevel(setUserPowerLevel.userId, setUserPowerLevel.powerLevel)
-            room.sendStateEvent(EventType.STATE_ROOM_POWER_LEVELS, null, currentPowerLevelsContent.toContent())
+            room.sendStateEvent(EventType.STATE_ROOM_POWER_LEVELS, null, newPowerLevelsContent)
         }
     }
 

@@ -107,49 +107,49 @@ class RoomMemberProfileController @Inject constructor(
                 // Cross signing is enabled for this user
                 if (state.userMXCrossSigningInfo.isTrusted()) {
                     // User is trusted
-                    val icon = if (state.allDevicesAreTrusted) {
-                        R.drawable.ic_shield_trusted
-                    } else {
-                        R.drawable.ic_shield_warning
-                    }
+//                    val icon = if (state.allDevicesAreTrusted) {
+//                        R.drawable.ic_shield_trusted
+//                    } else {
+//                        R.drawable.ic_shield_warning
+//                    }
+//
+//                    val titleRes = if (state.allDevicesAreTrusted) {
+//                        R.string.verification_profile_verified
+//                    } else {
+//                        R.string.verification_profile_warning
+//                    }
 
-                    val titleRes = if (state.allDevicesAreTrusted) {
-                        R.string.verification_profile_verified
-                    } else {
-                        R.string.verification_profile_warning
-                    }
-
-                    buildProfileAction(
-                            id = "learn_more",
-                            title = stringProvider.getString(titleRes),
-                            dividerColor = dividerColor,
-                            editable = true,
-                            icon = icon,
-                            tintIcon = false,
-                            divider = false,
-                            action = { callback?.onShowDeviceList() }
-                    )
+//                    buildProfileAction(
+//                            id = "learn_more",
+//                            title = stringProvider.getString(titleRes),
+//                            dividerColor = dividerColor,
+//                            editable = true,
+//                            icon = icon,
+//                            tintIcon = false,
+//                            divider = false,
+//                            action = { callback?.onShowDeviceList() }
+//                    )
                 } else {
                     // Not trusted, propose to verify
                     if (!state.isMine) {
-                        buildProfileAction(
-                                id = "learn_more",
-                                title = stringProvider.getString(R.string.verification_profile_verify),
-                                dividerColor = dividerColor,
-                                editable = true,
-                                icon = R.drawable.ic_shield_black,
-                                divider = false,
-                                action = { callback?.onTapVerify() }
-                        )
+//                        buildProfileAction(
+//                                id = "learn_more",
+//                                title = stringProvider.getString(R.string.verification_profile_verify),
+//                                dividerColor = dividerColor,
+//                                editable = true,
+//                                icon = R.drawable.ic_shield_black,
+//                                divider = false,
+//                                action = { callback?.onTapVerify() }
+//                        )
                     } else {
-                        buildProfileAction(
-                                id = "learn_more",
-                                title = stringProvider.getString(R.string.room_profile_section_security_learn_more),
-                                dividerColor = dividerColor,
-                                editable = false,
-                                divider = false,
-                                action = { callback?.onShowDeviceListNoCrossSigning() }
-                        )
+//                        buildProfileAction(
+//                                id = "learn_more",
+//                                title = stringProvider.getString(R.string.room_profile_section_security_learn_more),
+//                                dividerColor = dividerColor,
+//                                editable = false,
+//                                divider = false,
+//                                action = { callback?.onShowDeviceListNoCrossSigning() }
+//                        )
                     }
 
                     genericFooterItem {

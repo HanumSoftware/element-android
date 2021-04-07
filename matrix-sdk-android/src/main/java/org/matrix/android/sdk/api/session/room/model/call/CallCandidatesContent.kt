@@ -28,17 +28,30 @@ data class CallCandidatesContent(
         /**
          * Required. The ID of the call this event relates to.
          */
-        @Json(name = "call_id") override val callId: String,
-        /**
-         * Required. ID to let user identify remote echo of their own events
-         */
-        @Json(name = "party_id") override val partyId: String? = null,
+        @Json(name = "call_id") val callId: String,
         /**
          * Required. Array of objects describing the candidates.
          */
-        @Json(name = "candidates") val candidates: List<CallCandidate> = emptyList(),
+        @Json(name = "candidates") val candidates: List<Candidate> = emptyList(),
         /**
-         * Required. The version of the VoIP specification this messages adheres to.
+         * Required. The version of the VoIP specification this messages adheres to. This specification is version 0.
          */
-        @Json(name = "version") override val version: String?
-): CallSignallingContent
+        @Json(name = "version") val version: Int = 0
+) {
+
+    @JsonClass(generateAdapter = true)
+    data class Candidate(
+            /**
+             * Required. The SDP media type this candidate is intended for.
+             */
+            @Json(name = "sdpMid") val sdpMid: String,
+            /**
+             * Required. The index of the SDP 'm' line this candidate is intended for.
+             */
+            @Json(name = "sdpMLineIndex") val sdpMLineIndex: Int,
+            /**
+             * Required. The SDP 'a' line of the candidate.
+             */
+            @Json(name = "candidate") val candidate: String
+    )
+}

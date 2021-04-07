@@ -26,8 +26,10 @@ import com.airbnb.mvrx.MvRxViewModelFactory
 import com.airbnb.mvrx.Success
 import com.airbnb.mvrx.Uninitialized
 import com.airbnb.mvrx.ViewModelContext
-import com.squareup.inject.assisted.Assisted
-import com.squareup.inject.assisted.AssistedInject
+import com.facebook.appevents.AppEventsLogger
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import im.vector.app.R
 import im.vector.app.core.di.ActiveSessionHolder
 import im.vector.app.core.extensions.configureAndStart
@@ -68,7 +70,7 @@ class LoginViewModel @AssistedInject constructor(
         private val homeServerHistoryService: HomeServerHistoryService
 ) : VectorViewModel<LoginViewState, LoginAction, LoginViewEvents>(initialState) {
 
-    @AssistedInject.Factory
+    @AssistedFactory
     interface Factory {
         fun create(initialState: LoginViewState): LoginViewModel
     }
@@ -107,6 +109,9 @@ class LoginViewModel @AssistedInject constructor(
     // True when login and password has been sent with success to the homeserver
     val isRegistrationStarted: Boolean
         get() = authenticationService.isRegistrationStarted
+
+    val userId: String?
+        get() = authenticationService.getLastAuthenticatedSession()?.myUserId
 
     private val registrationWizard: RegistrationWizard?
         get() = authenticationService.getRegistrationWizard()
@@ -706,6 +711,8 @@ class LoginViewModel @AssistedInject constructor(
     }
 
     private fun onSessionCreated(session: Session) {
+        AppEventsLogger.newLogger(applicationContext).logEvent("completedRegistration")
+
         activeSessionHolder.setActiveSession(session)
         authenticationService.reset()
         session.configureAndStart(applicationContext)
@@ -810,12 +817,19 @@ class LoginViewModel @AssistedInject constructor(
     }
 
     override fun onCleared() {
-        super.onCleared()
-
         currentTask?.cancel()
+        super.onCleared()
     }
 
     fun getInitialHomeServerUrl(): String? {
         return loginConfig?.homeServerUrl
+    }
+
+    fun getSsoUrl(redirectUrl: String, deviceId: String?, providerId: String?): String? {
+        return authenticationService.getSsoUrl(redirectUrl, deviceId, providerId)
+    }
+
+    fun getFallbackUrl(forSignIn: Boolean, deviceId: String?): String? {
+        return authenticationService.getFallbackUrl(forSignIn, deviceId)
     }
 }

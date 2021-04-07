@@ -20,28 +20,24 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import im.vector.app.core.di.HasVectorInjector
-import im.vector.app.features.call.webrtc.WebRtcCallManager
+import im.vector.app.features.call.WebRtcPeerConnectionManager
 import timber.log.Timber
 
 class CallHeadsUpActionReceiver : BroadcastReceiver() {
 
     companion object {
         const val EXTRA_CALL_ACTION_KEY = "EXTRA_CALL_ACTION_KEY"
-        const val EXTRA_CALL_ID = "EXTRA_CALL_ID"
         const val CALL_ACTION_REJECT = 0
     }
 
     override fun onReceive(context: Context, intent: Intent?) {
-        val webRtcCallManager = (context.applicationContext as? HasVectorInjector)
+        val peerConnectionManager = (context.applicationContext as? HasVectorInjector)
                 ?.injector()
-                ?.webRtcCallManager()
+                ?.webRtcPeerConnectionManager()
                 ?: return
 
         when (intent?.getIntExtra(EXTRA_CALL_ACTION_KEY, 0)) {
-            CALL_ACTION_REJECT -> {
-                val callId = intent.getStringExtra(EXTRA_CALL_ID) ?: return
-                onCallRejectClicked(webRtcCallManager, callId)
-            }
+            CALL_ACTION_REJECT -> onCallRejectClicked(peerConnectionManager)
         }
 
         // Not sure why this should be needed
@@ -52,9 +48,9 @@ class CallHeadsUpActionReceiver : BroadcastReceiver() {
 //        context.stopService(Intent(context, CallHeadsUpService::class.java))
     }
 
-    private fun onCallRejectClicked(callManager: WebRtcCallManager, callId: String) {
+    private fun onCallRejectClicked(peerConnectionManager: WebRtcPeerConnectionManager) {
         Timber.d("onCallRejectClicked")
-        callManager.getCallById(callId)?.endCall()
+        peerConnectionManager.endCall()
     }
 
 //    private fun onCallAnswerClicked(context: Context) {

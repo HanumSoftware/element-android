@@ -4,7 +4,7 @@
     <!-- Source: https://zpl.io/aBKw9Mk -->
 
     <!-- Accents -->
-    <color name="riotx_accent">#FF0DBD8B</color>
+    <color name="riotx_accent">#00badf</color>
     <color name="riotx_accent_alpha25">#3F0DBD8B</color>
 
 
@@ -13,25 +13,24 @@
     <color name="riotx_button_primary_accent_alpha12">#14368BD6</color>
 
 
-    <color name="riotx_positive_accent">#0DBD8B</color>
+    <color name="riotx_positive_accent">#00badf</color>
     <color name="riotx_disabled_accent">#C4C4C4</color>
     <color name="riotx_positive_accent_alpha12">#1E0DBD8B</color>
     <color name="riotx_button_disabled_alpha12">#1E61708B</color>
 
-    <color name="bg_call_screen">#99000000</color>
 
     <color name="riotx_notice">#FFFF4B55</color>
     <color name="riotx_notice_secondary">#FF61708B</color>
     <color name="riotx_notice_secondary_alpha12">#1E61708B</color>
     <color name="riotx_links">#FF368BD6</color>
 
-    <color name="riotx_avatar_fill_1">#FF03B381</color>
-    <color name="riotx_avatar_fill_2">#FF368bd6</color>
-    <color name="riotx_avatar_fill_3">#FFac3ba8</color>
+    <color name="riotx_avatar_fill_1">#00badf</color>
+    <color name="riotx_avatar_fill_2">#c5d92b</color>
+    <color name="riotx_avatar_fill_3">#ac3ba8</color>
 
-    <color name="riotx_username_1">#368bd6</color>
+    <color name="riotx_username_1">#c5d92b</color>
     <color name="riotx_username_2">#ac3ba8</color>
-    <color name="riotx_username_3">#03B381</color>
+    <color name="riotx_username_3">#00badf</color>
     <color name="riotx_username_4">#e64f7a</color>
     <color name="riotx_username_5">#ff812d</color>
     <color name="riotx_username_6">#2dc2c5</color>
@@ -47,7 +46,6 @@
     <!-- Palette: format fo naming:
       'riotx_<name in the palette snake case>_<theme>'
       -->
-
 
     <attr name="riotx_background" format="color" />
     <color name="riotx_background_light">#FFFFFFFF</color>
@@ -246,16 +244,9 @@
     <color name="riotx_reaction_background_on_dark">#4011BC8A</color>
     <color name="riotx_reaction_background_on_black">#4011BC8A</color>
 
-    <attr name="riotx_alerter_background" format="color" />
-    <color name="riotx_alerter_background_light">#FFF3F8FD</color>
-    <color name="riotx_alerter_background_dark">#FF282C35</color>
-    <color name="riotx_alerter_background_black">#FF282C35</color>
-
     <!-- (color from RiotWeb) -->
     <attr name="riotx_keys_backup_banner_accent_color" format="color" />
     <color name="riotx_keys_backup_banner_accent_color_light">#FFF8E3</color>
     <color name="riotx_keys_backup_banner_accent_color_dark">#22262E</color>
-
-
 
 </resources>

@@ -14,6 +14,8 @@
         <im.vector.app.core.preference.VectorEditTextPreference
             android:key="SETTINGS_DISPLAY_NAME_PREFERENCE_KEY"
             android:persistent="false"
+            app:negativeButtonText="ביטול"
+            android:positiveButtonText="אישור"
             android:title="@string/settings_display_name" />
 
         <im.vector.app.core.preference.VectorPreference
@@ -29,6 +31,7 @@
 
         <im.vector.app.core.preference.VectorPreference
             android:persistent="false"
+            app:isPreferenceVisible="false"
             android:summary="@string/settings_discovery_manage"
             android:title="@string/settings_discovery_category"
             app:fragment="im.vector.app.features.discovery.DiscoverySettingsFragment" />
@@ -51,7 +54,7 @@
 
     </im.vector.app.core.preference.VectorPreferenceCategory>
 
-    <im.vector.app.core.preference.VectorPreferenceCategory android:title="@string/settings_integrations">
+    <im.vector.app.core.preference.VectorPreferenceCategory android:title="@string/settings_integrations" app:isPreferenceVisible="false">
 
         <im.vector.app.core.preference.VectorPreference
             android:focusable="false"
@@ -61,6 +64,7 @@
         <im.vector.app.core.preference.VectorSwitchPreference
             android:key="SETTINGS_ALLOW_INTEGRATIONS_KEY"
             android:persistent="false"
+            android:defaultValue="true"
             android:title="@string/settings_integration_allow" />
 
         <im.vector.app.core.preference.VectorPreference
@@ -71,16 +75,18 @@
 
     </im.vector.app.core.preference.VectorPreferenceCategory>
 
-    <im.vector.app.core.preference.VectorPreferenceCategory android:title="@string/settings_advanced">
+    <im.vector.app.core.preference.VectorPreferenceCategory app:isPreferenceVisible="false" android:title="@string/settings_advanced">
 
         <im.vector.app.core.preference.VectorPreference
             android:key="SETTINGS_LOGGED_IN_PREFERENCE_KEY"
             android:title="@string/settings_logged_in"
+            app:isPreferenceVisible="false"
             tools:summary="\@user:matrix.org" />
 
         <im.vector.app.core.preference.VectorPreference
             android:key="SETTINGS_HOME_SERVER_PREFERENCE_KEY"
             android:title="@string/settings_home_server"
+            app:isPreferenceVisible="false"
             tools:summary="https://homeserver.org" />
 
         <im.vector.app.core.preference.VectorPreference

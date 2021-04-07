@@ -21,7 +21,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.os.Parcelable
-import android.view.MenuItem
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
@@ -30,6 +29,7 @@ import androidx.core.view.isVisible
 import androidx.drawerlayout.widget.DrawerLayout
 import com.airbnb.mvrx.MvRx
 import com.airbnb.mvrx.viewModel
+import im.vector.app.API
 import im.vector.app.R
 import im.vector.app.core.di.ActiveSessionHolder
 import im.vector.app.core.di.ScreenComponent
@@ -39,9 +39,7 @@ import im.vector.app.core.extensions.replaceFragment
 import im.vector.app.core.platform.ToolbarConfigurable
 import im.vector.app.core.platform.VectorBaseActivity
 import im.vector.app.core.pushers.PushersManager
-import im.vector.app.core.utils.toast
 import im.vector.app.databinding.ActivityHomeBinding
-import im.vector.app.features.disclaimer.showDisclaimerDialog
 import im.vector.app.features.matrixto.MatrixToBottomSheet
 import im.vector.app.features.notifications.NotificationDrawerManager
 import im.vector.app.features.permalink.NavigationInterceptor
@@ -80,6 +78,7 @@ class HomeActivity :
     private lateinit var sharedActionViewModel: HomeSharedActionViewModel
 
     private val homeActivityViewModel: HomeActivityViewModel by viewModel()
+
     @Inject lateinit var viewModelFactory: HomeActivityViewModel.Factory
 
     private val serverBackupStatusViewModel: ServerBackupStatusViewModel by viewModel()
@@ -94,7 +93,6 @@ class HomeActivity :
     @Inject lateinit var shortcutsHandler: ShortcutsHandler
     @Inject lateinit var unknownDeviceViewModelFactory: UnknownDeviceDetectorSharedViewModel.Factory
     @Inject lateinit var permalinkHandler: PermalinkHandler
-    @Inject lateinit var avatarRenderer: AvatarRenderer
 
     private val drawerListener = object : DrawerLayout.SimpleDrawerListener() {
         override fun onDrawerStateChanged(newState: Int) {
@@ -130,9 +128,12 @@ class HomeActivity :
                 .observe()
                 .subscribe { sharedAction ->
                     when (sharedAction) {
-                        is HomeActivitySharedAction.OpenDrawer -> views.drawerLayout.openDrawer(GravityCompat.START)
+                        is HomeActivitySharedAction.OpenDrawer  -> {
+                            API.getPoints(activeSessionHolder.getActiveSession().myUserId)
+                            views.drawerLayout.openDrawer(GravityCompat.START)
+                        }
                         is HomeActivitySharedAction.CloseDrawer -> views.drawerLayout.closeDrawer(GravityCompat.START)
-                        is HomeActivitySharedAction.OpenGroup -> {
+                        is HomeActivitySharedAction.OpenGroup   -> {
                             views.drawerLayout.closeDrawer(GravityCompat.START)
                             replaceFragment(R.id.homeDetailFragmentContainer, HomeDetailFragment::class.java, allowStateLoss = true)
                         }
@@ -149,9 +150,12 @@ class HomeActivity :
         homeActivityViewModel.observeViewEvents {
             when (it) {
                 is HomeActivityViewEvents.AskPasswordToInitCrossSigning -> handleAskPasswordToInitCrossSigning(it)
-                is HomeActivityViewEvents.OnNewSession -> handleOnNewSession(it)
-                HomeActivityViewEvents.PromptToEnableSessionPush -> handlePromptToEnablePush()
-                is HomeActivityViewEvents.OnCrossSignedInvalidated -> handleCrossSigningInvalidated(it)
+                is HomeActivityViewEvents.OnNewSession                  -> {
+                }
+                HomeActivityViewEvents.PromptToEnableSessionPush        -> handlePromptToEnablePush()
+                is HomeActivityViewEvents.OnCrossSignedInvalidated      -> {
+
+                }
             }.exhaustive
         }
         homeActivityViewModel.subscribe(this) { renderState(it) }
@@ -162,13 +166,15 @@ class HomeActivity :
         if (isFirstCreation()) {
             handleIntent(intent)
         }
+
+        API.getPoints(activeSessionHolder.getActiveSession().myUserId)
     }
 
     private fun handleIntent(intent: Intent?) {
         intent?.dataString?.let { deepLink ->
             val resolvedLink = when {
-                deepLink.startsWith(PermalinkService.MATRIX_TO_URL_BASE)               -> deepLink
-                deepLink.startsWith(PermalinkService.MATRIX_TO_CUSTOM_SCHEME_URL_BASE) -> {
+                deepLink.startsWith(PermalinkService.MATRIX_TO_URL_BASE) -> deepLink
+                deepLink.startsWith(MATRIX_TO_CUSTOM_SCHEME_URL_BASE)    -> {
                     // This is a bit ugly, but for now just convert to matrix.to link for compatibility
                     when {
                         deepLink.startsWith(USER_LINK_PREFIX) -> deepLink.substring(USER_LINK_PREFIX.length)
@@ -178,7 +184,7 @@ class HomeActivity :
                         activeSessionHolder.getSafeActiveSession()?.permalinkService()?.createPermalink(it)
                     }
                 }
-                else                                                                   -> null
+                else                                                     -> return@let
             }
 
             permalinkHandler.launch(
@@ -191,7 +197,11 @@ class HomeActivity :
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe { isHandled ->
                         if (!isHandled) {
-                            toast(R.string.permalink_malformed)
+                            AlertDialog.Builder(this)
+                                    .setTitle(R.string.dialog_title_error)
+                                    .setMessage(R.string.permalink_malformed)
+                                    .setPositiveButton(R.string.ok, null)
+                                    .show()
                         }
                     }
                     .disposeOnDestroy()
@@ -200,7 +210,7 @@ class HomeActivity :
 
     private fun renderState(state: HomeActivityViewState) {
         when (val status = state.initialSyncProgressServiceStatus) {
-            is InitialSyncProgressService.Status.Idle -> {
+            is InitialSyncProgressService.Status.Idle        -> {
                 views.waitingView.root.isVisible = false
             }
             is InitialSyncProgressService.Status.Progressing -> {
@@ -234,31 +244,31 @@ class HomeActivity :
         }
     }
 
-    private fun handleCrossSigningInvalidated(event: HomeActivityViewEvents.OnCrossSignedInvalidated) {
-        // We need to ask
-        promptSecurityEvent(
-                event.userItem,
-                R.string.crosssigning_verify_this_session,
-                R.string.confirm_your_identity
-        ) {
-            it.navigator.waitSessionVerification(it)
-        }
-    }
+//    private fun handleCrossSigningInvalidated(event: HomeActivityViewEvents.OnCrossSignedInvalidated) {
+//        // We need to ask
+//        promptSecurityEvent(
+//                event.userItem,
+//                R.string.crosssigning_verify_this_session,
+//                R.string.confirm_your_identity
+//        ) {
+//            it.navigator.waitSessionVerification(it)
+//        }
+//    }
 
-    private fun handleOnNewSession(event: HomeActivityViewEvents.OnNewSession) {
-        // We need to ask
-        promptSecurityEvent(
-                event.userItem,
-                R.string.crosssigning_verify_this_session,
-                R.string.confirm_your_identity
-        ) {
-            if (event.waitForIncomingRequest) {
-                it.navigator.waitSessionVerification(it)
-            } else {
-                it.navigator.requestSelfSessionVerification(it)
-            }
-        }
-    }
+//    private fun handleOnNewSession(event: HomeActivityViewEvents.OnNewSession) {
+//        // We need to ask
+//        promptSecurityEvent(
+//                event.userItem,
+//                R.string.crosssigning_verify_this_session,
+//                R.string.confirm_your_identity
+//        ) {
+//            if (event.waitForIncomingRequest) {
+//                it.navigator.waitSessionVerification(it)
+//            } else {
+//                it.navigator.requestSelfSessionVerification(it)
+//            }
+//        }
+//    }
 
     private fun handlePromptToEnablePush() {
         popupAlertManager.postVectorAlert(
@@ -302,9 +312,9 @@ class HomeActivity :
                         uid = "upgradeSecurity",
                         title = getString(titleRes),
                         description = getString(descRes),
-                        iconId = R.drawable.ic_shield_warning
+                        iconId = R.drawable.ic_shield_warning,
+                        matrixItem = userItem
                 ).apply {
-                    viewBinder = VerificationVectorAlert.ViewBinder(userItem, avatarRenderer)
                     colorInt = ContextCompat.getColor(this@HomeActivity, R.color.riotx_positive_accent)
                     contentAction = Runnable {
                         (weakCurrentActivity?.get() as? VectorBaseActivity<*>)?.let {
@@ -332,18 +342,18 @@ class HomeActivity :
     override fun onResume() {
         super.onResume()
 
-        if (vectorUncaughtExceptionHandler.didAppCrash(this)) {
-            vectorUncaughtExceptionHandler.clearAppCrashStatus(this)
-
-            AlertDialog.Builder(this)
-                    .setMessage(R.string.send_bug_report_app_crashed)
-                    .setCancelable(false)
-                    .setPositiveButton(R.string.yes) { _, _ -> bugReporter.openBugReportScreen(this) }
-                    .setNegativeButton(R.string.no) { _, _ -> bugReporter.deleteCrashFile(this) }
-                    .show()
-        } else {
-            showDisclaimerDialog(this)
-        }
+//        if (vectorUncaughtExceptionHandler.didAppCrash(this)) {
+//            vectorUncaughtExceptionHandler.clearAppCrashStatus(this)
+//
+//            AlertDialog.Builder(this)
+//                    .setMessage(R.string.send_bug_report_app_crashed)
+//                    .setCancelable(false)
+//                    .setPositiveButton(R.string.yes) { _, _ -> bugReporter.openBugReportScreen(this) }
+//                    .setNegativeButton(R.string.no) { _, _ -> bugReporter.deleteCrashFile(this) }
+//                    .show()
+//        } else {
+//            showDisclaimerDialog(this)
+//        }
 
         // Force remote backup state update to update the banner if needed
         serverBackupStatusViewModel.refreshRemoteStateIfNeeded()
@@ -353,30 +363,30 @@ class HomeActivity :
         configureToolbar(toolbar, false)
     }
 
-    override fun getMenuRes() = R.menu.home
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.menu_home_suggestion -> {
-                bugReporter.openBugReportScreen(this, true)
-                return true
-            }
-            R.id.menu_home_report_bug -> {
-                bugReporter.openBugReportScreen(this, false)
-                return true
-            }
-            R.id.menu_home_filter -> {
-                navigator.openRoomsFiltering(this)
-                return true
-            }
-            R.id.menu_home_setting -> {
-                navigator.openSettings(this)
-                return true
-            }
-        }
-
-        return super.onOptionsItemSelected(item)
-    }
+//    override fun getMenuRes() = R.menu.home
+//
+//    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+//        when (item.itemId) {
+//            R.id.menu_home_suggestion -> {
+//                bugReporter.openBugReportScreen(this, true)
+//                return true
+//            }
+//            R.id.menu_home_report_bug -> {
+//                bugReporter.openBugReportScreen(this, false)
+//                return true
+//            }
+//            R.id.menu_home_filter     -> {
+//                navigator.openRoomsFiltering(this)
+//                return true
+//            }
+//            R.id.menu_home_setting    -> {
+//                navigator.openSettings(this)
+//                return true
+//            }
+//        }
+//
+//        return super.onOptionsItemSelected(item)
+//    }
 
     override fun onBackPressed() {
         if (views.drawerLayout.isDrawerOpen(GravityCompat.START)) {
@@ -411,7 +421,8 @@ class HomeActivity :
                     }
         }
 
-        private const val ROOM_LINK_PREFIX = "${PermalinkService.MATRIX_TO_CUSTOM_SCHEME_URL_BASE}room/"
-        private const val USER_LINK_PREFIX = "${PermalinkService.MATRIX_TO_CUSTOM_SCHEME_URL_BASE}user/"
+        private const val MATRIX_TO_CUSTOM_SCHEME_URL_BASE = "element://"
+        private const val ROOM_LINK_PREFIX = "${MATRIX_TO_CUSTOM_SCHEME_URL_BASE}room/"
+        private const val USER_LINK_PREFIX = "${MATRIX_TO_CUSTOM_SCHEME_URL_BASE}user/"
     }
 }

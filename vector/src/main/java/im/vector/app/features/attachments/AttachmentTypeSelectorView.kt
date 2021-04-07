@@ -72,7 +72,6 @@ class AttachmentTypeSelectorView(context: Context,
         views.attachmentGalleryButton.configure(Type.GALLERY)
         views.attachmentCameraButton.configure(Type.CAMERA)
         views.attachmentFileButton.configure(Type.FILE)
-        views.attachmentStickersButton.configure(Type.STICKER)
         views.attachmentAudioButton.configure(Type.AUDIO)
         views.attachmentContactButton.configure(Type.CONTACT)
         width = LinearLayout.LayoutParams.MATCH_PARENT
@@ -107,7 +106,6 @@ class AttachmentTypeSelectorView(context: Context,
         animateButtonIn(views.attachmentFileButton, ANIMATION_DURATION / 4)
         animateButtonIn(views.attachmentAudioButton, ANIMATION_DURATION / 2)
         animateButtonIn(views.attachmentContactButton, ANIMATION_DURATION / 4)
-        animateButtonIn(views.attachmentStickersButton, 0)
     }
 
     override fun dismiss() {

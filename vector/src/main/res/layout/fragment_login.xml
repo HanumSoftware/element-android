@@ -11,17 +11,16 @@
 
         <LinearLayout style="@style/LoginFormContainer">
 
-            <ImageView
-                style="@style/LoginLogo"
-                tools:ignore="ContentDescription" />
 
             <ImageView
-                android:id="@+id/loginServerIcon"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:tint="?riotx_text_primary"
-                tools:ignore="MissingPrefix"
-                tools:src="@drawable/ic_logo_matrix_org" />
+                android:id="@+id/logo"
+                android:layout_width="match_parent"
+                android:layout_height="140dp"
+                android:src="@drawable/app_logo"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/loginTitle"
@@ -101,6 +100,100 @@
 
             </FrameLayout>
 
+            <LinearLayout
+                android:id="@+id/checkbox_root"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layoutDirection="rtl"
+                android:orientation="horizontal"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <CheckBox
+                    android:id="@+id/checkbox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="אני מסכים ל"
+                            android:textColor="@color/black" />
+
+                        <TextView
+                            android:id="@+id/terms_btn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingTop="8dp"
+                            android:paddingBottom="8dp"
+                            android:text="@string/terms"
+                            android:textColor="#1B0EAB" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text=" ול"
+                            android:textColor="@color/black" />
+
+                        <TextView
+                            android:id="@+id/policy_btn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingTop="8dp"
+                            android:paddingBottom="8dp"
+                            android:text="@string/policy"
+                            android:textColor="#1B0EAB" />
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/privacy_btn"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingBottom="8dp"
+                        android:text="@string/privacy"
+                        android:textColor="#1B0EAB" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:id="@+id/eula_checkbox_root"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layoutDirection="rtl"
+                android:orientation="horizontal"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <CheckBox
+                    android:id="@+id/eula_checkbox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:id="@+id/eula_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:text="הסכם רשיון למשתמש קצה"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:textColor="#1B0EAB" />
+
+            </LinearLayout>
+
             <TextView
                 android:id="@+id/loginPasswordNotice"
                 android:layout_width="wrap_content"
@@ -155,7 +248,8 @@
                     android:gravity="center"
                     android:text="@string/login_social_continue"
                     android:textAppearance="@style/TextAppearance.Vector.Login.Text"
-                    android:textSize="14sp" />
+                    android:textSize="14sp"
+                    android:visibility="gone" />
 
                 <im.vector.app.features.login.SocialLoginButtonsView
                     android:id="@+id/loginSocialLoginButtons"

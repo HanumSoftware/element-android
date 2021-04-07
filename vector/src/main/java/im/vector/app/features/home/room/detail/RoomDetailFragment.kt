@@ -68,10 +68,14 @@ import com.airbnb.mvrx.Success
 import com.airbnb.mvrx.args
 import com.airbnb.mvrx.fragmentViewModel
 import com.airbnb.mvrx.withState
+import com.facebook.appevents.AppEventsLogger
 import com.google.android.material.snackbar.Snackbar
 import com.jakewharton.rxbinding3.widget.textChanges
 import com.vanniktech.emoji.EmojiPopup
+import im.vector.app.API
+import im.vector.app.LogEventBody
 import im.vector.app.R
+import im.vector.app.core.di.DefaultSharedPreferences
 import im.vector.app.core.dialogs.ConfirmationDialogBuilder
 import im.vector.app.core.dialogs.GalleryOrCameraDialogHelper
 import im.vector.app.core.dialogs.withColoredButton
@@ -122,8 +126,8 @@ import im.vector.app.features.attachments.preview.AttachmentsPreviewArgs
 import im.vector.app.features.attachments.toGroupedContentAttachmentData
 import im.vector.app.features.call.SharedActiveCallViewModel
 import im.vector.app.features.call.VectorCallActivity
+import im.vector.app.features.call.WebRtcPeerConnectionManager
 import im.vector.app.features.call.conference.JitsiCallViewModel
-import im.vector.app.features.call.webrtc.WebRtcCallManager
 import im.vector.app.features.command.Command
 import im.vector.app.features.crypto.keysbackup.restore.KeysBackupRestoreActivity
 import im.vector.app.features.crypto.util.toImageRes
@@ -224,6 +228,7 @@ class RoomDetailFragment @Inject constructor(
         private val vectorPreferences: VectorPreferences,
         private val colorProvider: ColorProvider,
         private val notificationUtils: NotificationUtils,
+        private val webRtcPeerConnectionManager: WebRtcPeerConnectionManager,
         private val matrixItemColorProvider: MatrixItemColorProvider,
         private val imageContentRenderer: ImageContentRenderer,
         private val roomDetailPendingActionStore: RoomDetailPendingActionStore,
@@ -327,7 +332,7 @@ class RoomDetailFragment @Inject constructor(
         sharedCallActionViewModel
                 .activeCall
                 .observe(viewLifecycleOwner, {
-                    activeCallViewHolder.updateCall(it)
+                    activeCallViewHolder.updateCall(it, webRtcPeerConnectionManager)
                     invalidateOptionsMenu()
                 })
 
@@ -384,7 +389,6 @@ class RoomDetailFragment @Inject constructor(
                 }
                 is RoomDetailViewEvents.StartChatEffect                  -> handleChatEffect(it.type)
                 RoomDetailViewEvents.StopChatEffects                     -> handleStopChatEffects()
-                is RoomDetailViewEvents.DisplayAndAcceptCall             -> acceptIncomingCall(it)
             }.exhaustive
         }
 
@@ -393,16 +397,7 @@ class RoomDetailFragment @Inject constructor(
         }
     }
 
-    private fun acceptIncomingCall(event: RoomDetailViewEvents.DisplayAndAcceptCall) {
-        val intent = VectorCallActivity.newIntent(
-                context = vectorBaseActivity,
-                mxCall = event.call.mxCall,
-                mode = VectorCallActivity.INCOMING_ACCEPT
-        )
-        startActivity(intent)
-    }
-
-        private fun handleChatEffect(chatEffect: ChatEffect) {
+    private fun handleChatEffect(chatEffect: ChatEffect) {
         when (chatEffect) {
             ChatEffect.CONFETTI -> {
                 views.viewKonfetti.isVisible = true
@@ -605,7 +600,7 @@ class RoomDetailFragment @Inject constructor(
     }
 
     override fun onDestroy() {
-        activeCallViewHolder.unBind()
+        activeCallViewHolder.unBind(webRtcPeerConnectionManager)
         roomDetailViewModel.handle(RoomDetailAction.ExitTrackingUnreadMessagesState)
         super.onDestroy()
     }
@@ -1029,6 +1024,9 @@ class RoomDetailFragment @Inject constructor(
         if (activityResult.resultCode == Activity.RESULT_OK) {
             val sendData = AttachmentsPreviewActivity.getOutput(data)
             val keepOriginalSize = AttachmentsPreviewActivity.getKeepOriginalSize(data)
+
+            API.performLogEvent(LogEventBody("sharecontent", "${session.myUserId}", 4))
+
             roomDetailViewModel.handle(RoomDetailAction.SendMedia(sendData, !keepOriginalSize))
         }
     }
@@ -1173,6 +1171,8 @@ class RoomDetailFragment @Inject constructor(
             } else false
         }
 
+        views.composerLayout.views.composerEmojiButton.isVisible = vectorPreferences.showEmojiKeyboard()
+
         views.composerLayout.callback = object : TextComposerView.Callback {
             override fun onAddAttachment() {
                 if (!::attachmentTypeSelector.isInitialized) {
@@ -1202,6 +1202,41 @@ class RoomDetailFragment @Inject constructor(
         }
         if (text.isNotBlank()) {
             // We collapse ASAP, if not there will be a slight anoying delay
+
+            val prefs = context?.let { DefaultSharedPreferences.getInstance(it) }
+
+            if (prefs?.getBoolean("post_first", true) == true) {
+
+                with(prefs.edit()) {
+                    putBoolean("post_first", false)
+                    apply()
+                }
+
+                API.performLogEvent(LogEventBody("post_first", "${session.myUserId}", 15))
+
+//                AppEventsLogger
+//                        .newLogger(context)
+//                        .logEvent(
+//                                "post_first",
+//                                15.0,
+//                                Bundle().apply {
+//                                    putInt("${session.myUserId}", 15)
+//                                }
+//                        )
+            } else {
+                API.performLogEvent(LogEventBody("post", "${session.myUserId}", 3))
+
+//                AppEventsLogger
+//                        .newLogger(context)
+//                        .logEvent(
+//                                "post",
+//                                3.0,
+//                                Bundle().apply {
+//                                    putInt("${session.myUserId}", 3)
+//                                }
+//                        )
+            }
+
             views.composerLayout.collapse(true)
             lockSendButton = true
             roomDetailViewModel.handle(RoomDetailAction.SendMessage(text, vectorPreferences.isMarkdownEnabled()))
@@ -1788,6 +1823,39 @@ class RoomDetailFragment @Inject constructor(
             }
             is EventSharedAction.QuickReact                 -> {
                 // eventId,ClickedOn,Add
+                val prefs = context?.let { DefaultSharedPreferences.getInstance(it) }
+
+                if (prefs?.getBoolean("comment_first", true) == true) {
+
+                    with(prefs.edit()) {
+                        putBoolean("comment_first", false)
+                        apply()
+                    }
+                    API.performLogEvent(LogEventBody("comment_first", "${session.myUserId}", 15))
+
+//                    AppEventsLogger
+//                            .newLogger(context)
+//                            .logEvent(
+//                                    "comment_first",
+//                                    15.0,
+//                                    Bundle().apply {
+//                                        putInt("${session.myUserId}", 15)
+//                                    }
+//                            )
+                } else {
+                    API.performLogEvent(LogEventBody("comment", "${session.myUserId}", 3))
+
+//                    AppEventsLogger
+//                            .newLogger(context)
+//                            .logEvent(
+//                                    "comment",
+//                                    3.0,
+//                                    Bundle().apply {
+//                                        putInt("${session.myUserId}", 3)
+//                                    }
+//                            )
+                }
+
                 roomDetailViewModel.handle(RoomDetailAction.UpdateQuickReactAction(action.eventId, action.clickedOn, action.add))
             }
             is EventSharedAction.Edit                       -> {
@@ -1990,6 +2058,17 @@ class RoomDetailFragment @Inject constructor(
     override fun onContentAttachmentsReady(attachments: List<ContentAttachmentData>) {
         val grouped = attachments.toGroupedContentAttachmentData()
         if (grouped.notPreviewables.isNotEmpty()) {
+            API.performLogEvent(LogEventBody("sharecontent", "${session.myUserId}", 4))
+
+//            AppEventsLogger
+//                    .newLogger(context)
+//                    .logEvent(
+//                            "sharecontent",
+//                            4.0,
+//                            Bundle().apply {
+//                                putInt("${session.myUserId}", 4)
+//                            }
+//                    )
             // Send the not previewable attachments right now (?)
             roomDetailViewModel.handle(RoomDetailAction.SendMedia(grouped.notPreviewables, false))
         }
@@ -2020,9 +2099,9 @@ class RoomDetailFragment @Inject constructor(
                     context = requireContext(),
                     callId = call.callId,
                     roomId = call.roomId,
-                    otherUserId = call.mxCall.opponentUserId,
-                    isIncomingCall = !call.mxCall.isOutgoing,
-                    isVideoCall = call.mxCall.isVideoCall,
+                    otherUserId = call.otherUserId,
+                    isIncomingCall = !call.isOutgoing,
+                    isVideoCall = call.isVideoCall,
                     mode = null
             ).let {
                 startActivity(it)

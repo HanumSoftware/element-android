@@ -22,6 +22,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
+import android.widget.Toast
 import androidx.autofill.HintConstants
 import androidx.core.text.isDigitsOnly
 import androidx.core.view.isVisible
@@ -79,6 +80,22 @@ class LoginFragment @Inject constructor() : AbstractSSOLoginFragment<FragmentLog
             }
             return@setOnEditorActionListener false
         }
+
+        views.termsBtn.setOnClickListener {
+            navigator.openTerms(requireActivity())
+        }
+
+        views.policyBtn.setOnClickListener {
+            navigator.openPolicy(requireActivity())
+        }
+
+        views.eulaBtn.setOnClickListener {
+            navigator.openEula(requireActivity())
+        }
+
+        views.privacyBtn.setOnClickListener {
+            navigator.openPolicy(requireActivity())
+        }
     }
 
     private fun setupForgottenPasswordButton() {
@@ -90,12 +107,17 @@ class LoginFragment @Inject constructor() : AbstractSSOLoginFragment<FragmentLog
             when (state.signMode) {
                 SignMode.Unknown            -> error("developer error")
                 SignMode.SignUp             -> {
+                    views.checkboxRoot.visibility = View.VISIBLE
+                    views.eulaCheckboxRoot.visibility = View.VISIBLE
+
                     views.loginField.setAutofillHints(HintConstants.AUTOFILL_HINT_NEW_USERNAME)
                     views.passwordField.setAutofillHints(HintConstants.AUTOFILL_HINT_NEW_PASSWORD)
                     views.loginSocialLoginButtons.mode = SocialLoginButtonsView.Mode.MODE_SIGN_UP
                 }
                 SignMode.SignIn,
                 SignMode.SignInWithMatrixId -> {
+                    views.eulaCheckboxRoot.visibility = View.GONE
+                    views.checkboxRoot.visibility = View.GONE
                     views.loginField.setAutofillHints(HintConstants.AUTOFILL_HINT_USERNAME)
                     views.passwordField.setAutofillHints(HintConstants.AUTOFILL_HINT_PASSWORD)
                     views.loginSocialLoginButtons.mode = SocialLoginButtonsView.Mode.MODE_SIGN_IN
@@ -154,7 +176,7 @@ class LoginFragment @Inject constructor() : AbstractSSOLoginFragment<FragmentLog
 
         // Handle direct signin first
         if (state.signMode == SignMode.SignInWithMatrixId) {
-            views.loginServerIcon.isVisible = false
+//            views.loginServerIcon.isVisible = false
             views.loginTitle.text = getString(R.string.login_signin_matrix_id_title)
             views.loginNotice.text = getString(R.string.login_signin_matrix_id_notice)
             views.loginPasswordNotice.isVisible = true
@@ -168,19 +190,19 @@ class LoginFragment @Inject constructor() : AbstractSSOLoginFragment<FragmentLog
 
             when (state.serverType) {
                 ServerType.MatrixOrg -> {
-                    views.loginServerIcon.isVisible = true
-                    views.loginServerIcon.setImageResource(R.drawable.ic_logo_matrix_org)
+//                    views.loginServerIcon.isVisible = true
+//                    views.loginServerIcon.setImageResource(R.drawable.ic_logo_matrix_org)
                     views.loginTitle.text = getString(resId, state.homeServerUrl.toReducedUrl())
                     views.loginNotice.text = getString(R.string.login_server_matrix_org_text)
                 }
                 ServerType.EMS       -> {
-                    views.loginServerIcon.isVisible = true
-                    views.loginServerIcon.setImageResource(R.drawable.ic_logo_element_matrix_services)
+//                    views.loginServerIcon.isVisible = true
+//                    views.loginServerIcon.setImageResource(R.drawable.ic_logo_element_matrix_services)
                     views.loginTitle.text = getString(resId, "Element Matrix Services")
                     views.loginNotice.text = getString(R.string.login_server_modular_text)
                 }
                 ServerType.Other     -> {
-                    views.loginServerIcon.isVisible = false
+//                    views.loginServerIcon.isVisible = false
                     views.loginTitle.text = getString(resId, state.homeServerUrl.toReducedUrl())
                     views.loginNotice.text = getString(R.string.login_server_other_text)
                 }
@@ -193,7 +215,12 @@ class LoginFragment @Inject constructor() : AbstractSSOLoginFragment<FragmentLog
                 views.loginSocialLoginButtons.ssoIdentityProviders = state.loginMode.ssoIdentityProviders
                 views.loginSocialLoginButtons.listener = object : SocialLoginButtonsView.InteractionListener {
                     override fun onProviderSelected(id: String?) {
-                        openInCustomTab(state.getSsoUrl(id))
+                        loginViewModel.getSsoUrl(
+                                redirectUrl = LoginActivity.VECTOR_REDIRECT_URL,
+                                deviceId = state.deviceId,
+                                providerId = id
+                        )
+                                ?.let { openInCustomTab(it) }
                     }
                 }
             } else {
@@ -215,7 +242,17 @@ class LoginFragment @Inject constructor() : AbstractSSOLoginFragment<FragmentLog
     }
 
     private fun setupSubmitButton() {
-        views.loginSubmit.setOnClickListener { submit() }
+        views.loginSubmit.setOnClickListener {
+            if (isSignupMode) {
+                if (views.checkbox.isChecked && views.eulaCheckbox.isChecked) {
+                    submit()
+                } else {
+                    Toast.makeText(context, "אנא אשר את תנאי השימוש ומידיניות פרטיות והסכם רשיון למשתמש קצה", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                submit()
+            }
+        }
         Observable
                 .combineLatest(
                         views.loginField.textChanges().map { it.trim().isNotEmpty() },

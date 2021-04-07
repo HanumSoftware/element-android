@@ -29,12 +29,10 @@ import im.vector.app.R
 import im.vector.app.core.extensions.hideKeyboard
 import im.vector.app.core.extensions.isEmail
 import im.vector.app.core.extensions.showPassword
-import im.vector.app.core.extensions.toReducedUrl
 import im.vector.app.databinding.FragmentLoginResetPasswordBinding
 import io.reactivex.Observable
 import io.reactivex.functions.BiFunction
 import io.reactivex.rxkotlin.subscribeBy
-
 import javax.inject.Inject
 
 /**
@@ -58,8 +56,8 @@ class LoginResetPasswordFragment @Inject constructor() : AbstractLoginFragment<F
         setupPasswordReveal()
     }
 
-    private fun setupUi(state: LoginViewState) {
-        views.resetPasswordTitle.text = getString(R.string.login_reset_password_on, state.homeServerUrl.toReducedUrl())
+    private fun setupUi() {
+        views.resetPasswordTitle.text = getString(R.string.login_reset_password_on)
     }
 
     private fun setupSubmitButton() {
@@ -142,7 +140,7 @@ class LoginResetPasswordFragment @Inject constructor() : AbstractLoginFragment<F
     }
 
     override fun updateWithState(state: LoginViewState) {
-        setupUi(state)
+        setupUi()
 
         when (state.asyncResetPassword) {
             is Loading -> {

@@ -75,18 +75,18 @@ class UserListController @Inject constructor(private val session: Session,
                     callback?.onContactBookClick()
                 })
             }
-            if (currentState.pendingInvitees.isEmpty()
-                    // For now we remove this option if in invite to existing room flow (and not create DM)
-                    && currentState.existingRoomId == null) {
-                actionItem {
-                    id(R.drawable.ic_qr_code_add)
-                    title(stringProvider.getString(R.string.qr_code))
-                    actionIconRes(R.drawable.ic_qr_code_add)
-                    clickAction(View.OnClickListener {
-                        callback?.onUseQRCode()
-                    })
-                }
-            }
+//            if (currentState.pendingInvitees.isEmpty()
+//                    // For now we remove this option if in invite to existing room flow (and not create DM)
+//                    && currentState.existingRoomId == null) {
+//                actionItem {
+//                    id(R.drawable.ic_qr_code_add)
+//                    title(stringProvider.getString(R.string.qr_code))
+//                    actionIconRes(R.drawable.ic_qr_code_add)
+//                    clickAction(View.OnClickListener {
+//                        callback?.onUseQRCode()
+//                    })
+//                }
+//            }
         }
 
         when (currentState.knownUsers) {

@@ -108,15 +108,15 @@ class DiscoverySettingsController @Inject constructor(
     private fun buildIdentityServerSection(data: DiscoverySettingsState) {
         val identityServer = data.identityServer() ?: stringProvider.getString(R.string.none)
 
-        settingsSectionTitleItem {
-            id("idServerTitle")
-            titleResId(R.string.identity_server)
-        }
+//        settingsSectionTitleItem {
+//            id("idServerTitle")
+//            titleResId(R.string.identity_server)
+//        }
 
-        settingsItem {
-            id("idServer")
-            title(identityServer)
-        }
+//        settingsItem {
+//            id("idServer")
+//            title(identityServer)
+//        }
 
         if (data.identityServer() != null && data.termsNotSigned) {
             settingsInfoItem {
@@ -132,41 +132,41 @@ class DiscoverySettingsController @Inject constructor(
                 buttonClickListener { listener?.openIdentityServerTerms() }
             }
         } else {
-            settingsInfoItem {
-                id("idServerFooter")
-                showCompoundDrawable(false)
-                if (data.identityServer() != null) {
-                    helperText(stringProvider.getString(R.string.settings_discovery_identity_server_info, identityServer))
-                } else {
-                    helperTextResId(R.string.settings_discovery_identity_server_info_none)
-                }
-            }
+//            settingsInfoItem {
+//                id("idServerFooter")
+//                showCompoundDrawable(false)
+//                if (data.identityServer() != null) {
+//                    helperText(stringProvider.getString(R.string.settings_discovery_identity_server_info, identityServer))
+//                } else {
+//                    helperTextResId(R.string.settings_discovery_identity_server_info_none)
+//                }
+//            }
         }
 
-        settingsButtonItem {
-            id("change")
-            colorProvider(colorProvider)
-            if (data.identityServer() == null) {
-                buttonTitleId(R.string.add_identity_server)
-            } else {
-                buttonTitleId(R.string.change_identity_server)
-            }
-            buttonClickListener { listener?.onTapChangeIdentityServer() }
-        }
+//        settingsButtonItem {
+//            id("change")
+//            colorProvider(colorProvider)
+//            if (data.identityServer() == null) {
+//                buttonTitleId(R.string.add_identity_server)
+//            } else {
+//                buttonTitleId(R.string.change_identity_server)
+//            }
+//            buttonClickListener { listener?.onTapChangeIdentityServer() }
+//        }
 
-        if (data.identityServer() != null) {
-            settingsInfoItem {
-                id("removeInfo")
-                helperTextResId(R.string.settings_discovery_disconnect_identity_server_info)
-            }
-            settingsButtonItem {
-                id("remove")
-                colorProvider(colorProvider)
-                buttonTitleId(R.string.disconnect_identity_server)
-                buttonStyle(ButtonStyle.DESTRUCTIVE)
-                buttonClickListener { listener?.onTapDisconnectIdentityServer() }
-            }
-        }
+//        if (data.identityServer() != null) {
+//            settingsInfoItem {
+//                id("removeInfo")
+//                helperTextResId(R.string.settings_discovery_disconnect_identity_server_info)
+//            }
+//            settingsButtonItem {
+//                id("remove")
+//                colorProvider(colorProvider)
+//                buttonTitleId(R.string.disconnect_identity_server)
+//                buttonStyle(ButtonStyle.DESTRUCTIVE)
+//                buttonClickListener { listener?.onTapDisconnectIdentityServer() }
+//            }
+//        }
     }
 
     private fun buildEmailsSection(emails: Async<List<PidInfo>>) {

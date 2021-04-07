@@ -26,6 +26,8 @@ import im.vector.app.core.resources.ColorProvider
 import im.vector.app.core.resources.StringProvider
 import im.vector.app.core.ui.list.genericFooterItem
 import im.vector.app.features.home.ShortcutCreator
+import im.vector.app.features.home.room.detail.timeline.TimelineEventController
+import im.vector.app.features.home.room.detail.timeline.tools.createLinkMovementMethod
 import im.vector.app.features.settings.VectorPreferences
 import org.matrix.android.sdk.api.crypto.RoomEncryptionTrustLevel
 import org.matrix.android.sdk.api.session.room.model.RoomSummary
@@ -53,6 +55,7 @@ class RoomProfileController @Inject constructor(
         fun onSettingsClicked()
         fun onLeaveRoomClicked()
         fun onRoomIdClicked()
+        fun onUrlInTopicLongClicked(url: String)
     }
 
     override fun buildModels(data: RoomProfileViewState?) {
@@ -71,6 +74,16 @@ class RoomProfileController @Inject constructor(
                         id("topic")
                         content(it)
                         maxLines(2)
+                        movementMethod(createLinkMovementMethod(object : TimelineEventController.UrlClickCallback {
+                            override fun onUrlClicked(url: String, title: String): Boolean {
+                                return false
+                            }
+
+                            override fun onUrlLongClicked(url: String): Boolean {
+                                callback?.onUrlInTopicLongClicked(url)
+                                return true
+                            }
+                        }))
                     }
                 }
 
@@ -108,11 +121,10 @@ class RoomProfileController @Inject constructor(
                 icon = R.drawable.ic_room_profile_notification,
                 action = { callback?.onNotificationsClicked() }
         )
-        val numberOfMembers = roomSummary.joinedMembersCount ?: 0
         val hasWarning = roomSummary.isEncrypted && roomSummary.roomEncryptionTrustLevel == RoomEncryptionTrustLevel.Warning
         buildProfileAction(
                 id = "member_list",
-                title = stringProvider.getQuantityString(R.plurals.room_profile_section_more_member_list, numberOfMembers, numberOfMembers),
+                title = stringProvider.getString(R.string.participants),
                 dividerColor = dividerColor,
                 icon = R.drawable.ic_room_profile_member_list,
                 accessory = R.drawable.ic_shield_warning.takeIf { hasWarning } ?: 0,

@@ -41,6 +41,8 @@ class LoginServerSelectionFragment @Inject constructor() : AbstractLoginFragment
 
         initViews()
         initTextViews()
+
+        views.loginServerChoiceMatrixOrg.performClick()
     }
 
     private fun initViews() {

@@ -99,7 +99,7 @@ class ThreePidsSettingsController @Inject constructor(
     private fun buildThreePids(list: List<ThreePid>, data: ThreePidsSettingsViewState) {
         val splited = list.groupBy { it is ThreePid.Email }
         val emails = splited[true].orEmpty()
-        val msisdn = splited[false].orEmpty()
+//        val msisdn = splited[false].orEmpty()
 
         settingsSectionTitleItem {
             id("email")
@@ -159,67 +159,68 @@ class ThreePidsSettingsController @Inject constructor(
             }
             is ThreePidsSettingsUiState.AddingPhoneNumber -> Unit
         }.exhaustive
-
-        settingsSectionTitleItem {
-            id("msisdn")
-            title(stringProvider.getString(R.string.settings_phone_numbers))
-        }
-
-        msisdn.forEach { buildThreePid("msisdn ", it) }
-
-        // Pending msisdn
-        data.pendingThreePids.invoke()
-                ?.filterIsInstance(ThreePid.Msisdn::class.java)
-                .orEmpty()
-                .let { pendingList ->
-                    if (pendingList.isEmpty() && msisdn.isEmpty()) {
-                        noResultItem {
-                            id("noMsisdn")
-                            text(stringProvider.getString(R.string.settings_phone_number_empty))
-                        }
-                    }
-
-                    pendingList.forEach { buildPendingThreePid(data, "p_msisdn ", it) }
-                }
+//
+//        settingsSectionTitleItem {
+//            id("msisdn")
+//            title(stringProvider.getString(R.string.settings_phone_numbers))
+//        }
+//
+//        msisdn.forEach { buildThreePid("msisdn ", it) }
+//
+//        // Pending msisdn
+//        data.pendingThreePids.invoke()
+//                ?.filterIsInstance(ThreePid.Msisdn::class.java)
+//                .orEmpty()
+//                .let { pendingList ->
+//                    if (pendingList.isEmpty() && msisdn.isEmpty()) {
+//                        noResultItem {
+//                            id("noMsisdn")
+//                            text(stringProvider.getString(R.string.settings_phone_number_empty))
+//                        }
+//                    }
+//
+//                    pendingList.forEach { buildPendingThreePid(data, "p_msisdn ", it) }
+//                }
 
         when (data.uiState) {
-            ThreePidsSettingsUiState.Idle                 ->
-                genericButtonItem {
-                    id("addMsisdn")
-                    text(stringProvider.getString(R.string.settings_add_phone_number))
-                    textColor(colorProvider.getColor(R.color.riotx_accent))
-                    buttonClickAction(View.OnClickListener { interactionListener?.addMsisdn() })
-                }
+            ThreePidsSettingsUiState.Idle                 -> {
+//                genericButtonItem {
+//                    id("addMsisdn")
+//                    text(stringProvider.getString(R.string.settings_add_phone_number))
+//                    textColor(colorProvider.getColor(R.color.riotx_accent))
+//                    buttonClickAction(View.OnClickListener { interactionListener?.addMsisdn() })
+//                }
+            }
             is ThreePidsSettingsUiState.AddingEmail       -> Unit
             is ThreePidsSettingsUiState.AddingPhoneNumber -> {
-                settingsInfoItem {
-                    id("addingMsisdnInfo")
-                    helperText(stringProvider.getString(R.string.login_msisdn_notice))
-                }
-                settingsEditTextItem {
-                    id("addingMsisdn")
-                    inputType(InputType.TYPE_CLASS_PHONE)
-                    hint(stringProvider.getString(R.string.medium_phone_number))
-                    if (data.editTextReinitiator.isTrue()) {
-                        value("")
-                        requestFocus(true)
-                    }
-                    errorText(data.uiState.error)
-                    interactionListener(object : SettingsEditTextItem.Listener {
-                        override fun onValidate() {
-                            interactionListener?.doAddMsisdn(currentInputValue)
-                        }
-
-                        override fun onTextChange(text: String) {
-                            currentInputValue = text
-                        }
-                    })
-                }
-                settingsContinueCancelItem {
-                    id("contAddingMsisdn")
-                    continueOnClick { interactionListener?.doAddMsisdn(currentInputValue) }
-                    cancelOnClick { interactionListener?.cancelAdding() }
-                }
+//                settingsInfoItem {
+//                    id("addingMsisdnInfo")
+//                    helperText(stringProvider.getString(R.string.login_msisdn_notice))
+//                }
+//                settingsEditTextItem {
+//                    id("addingMsisdn")
+//                    inputType(InputType.TYPE_CLASS_PHONE)
+//                    hint(stringProvider.getString(R.string.medium_phone_number))
+//                    if (data.editTextReinitiator.isTrue()) {
+//                        value("")
+//                        requestFocus(true)
+//                    }
+//                    errorText(data.uiState.error)
+//                    interactionListener(object : SettingsEditTextItem.Listener {
+//                        override fun onValidate() {
+//                            interactionListener?.doAddMsisdn(currentInputValue)
+//                        }
+//
+//                        override fun onTextChange(text: String) {
+//                            currentInputValue = text
+//                        }
+//                    })
+//                }
+//                settingsContinueCancelItem {
+//                    id("contAddingMsisdn")
+//                    continueOnClick { interactionListener?.doAddMsisdn(currentInputValue) }
+//                    cancelOnClick { interactionListener?.cancelAdding() }
+//                }
             }
         }.exhaustive
     }

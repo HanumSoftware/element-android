@@ -19,6 +19,8 @@ package im.vector.app.features.navigation
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
+import android.os.Bundle
 import android.view.View
 import android.view.Window
 import androidx.activity.result.ActivityResultLauncher
@@ -27,11 +29,17 @@ import androidx.core.app.ActivityOptionsCompat
 import androidx.core.app.TaskStackBuilder
 import androidx.core.util.Pair
 import androidx.core.view.ViewCompat
+import com.facebook.appevents.AppEventsLogger
+import im.vector.app.API
+import im.vector.app.ContextInjector
+import im.vector.app.LogEventBody
 import im.vector.app.R
 import im.vector.app.core.di.ActiveSessionHolder
+import im.vector.app.core.di.DefaultSharedPreferences
 import im.vector.app.core.error.fatalError
 import im.vector.app.core.platform.VectorBaseActivity
 import im.vector.app.core.utils.toast
+import im.vector.app.features.about_us.AboutUsActivity
 import im.vector.app.features.call.conference.JitsiCallViewModel
 import im.vector.app.features.call.conference.VectorJitsiActivity
 import im.vector.app.features.createdirect.CreateDirectRoomActivity
@@ -42,6 +50,7 @@ import im.vector.app.features.crypto.recover.SetupMode
 import im.vector.app.features.crypto.verification.SupportedVerificationMethodsProvider
 import im.vector.app.features.crypto.verification.VerificationBottomSheet
 import im.vector.app.features.debug.DebugMenuActivity
+import im.vector.app.features.details_screen.DetailsActivity
 import im.vector.app.features.home.room.detail.RoomDetailActivity
 import im.vector.app.features.home.room.detail.RoomDetailArgs
 import im.vector.app.features.home.room.detail.search.SearchActivity
@@ -65,6 +74,7 @@ import im.vector.app.features.settings.VectorPreferences
 import im.vector.app.features.settings.VectorSettingsActivity
 import im.vector.app.features.share.SharedData
 import im.vector.app.features.terms.ReviewTermsActivity
+import im.vector.app.features.volunteer.WebViewActivity
 import im.vector.app.features.widgets.WidgetActivity
 import im.vector.app.features.widgets.WidgetArgsBuilder
 import org.matrix.android.sdk.api.session.crypto.verification.IncomingSasVerificationTransaction
@@ -224,6 +234,104 @@ class DefaultNavigator @Inject constructor(
         context.startActivity(intent)
     }
 
+    override fun openAboutUs(context: Context) {
+        AppEventsLogger.newLogger(context).logEvent("About")
+
+
+        val prefs = ContextInjector.applicationContext?.let { DefaultSharedPreferences.getInstance(it) }
+
+        if (prefs?.getBoolean("aboutus_first", true) == true) {
+
+            with(prefs.edit()) {
+                putBoolean("aboutus_first", false)
+                apply()
+            }
+
+
+            API.performLogEvent(LogEventBody("aboutus_first", "${sessionHolder.getActiveSession().myUserId}", 6))
+        } else {
+            API.performLogEvent(LogEventBody("aboutus", "${sessionHolder.getActiveSession().myUserId}", 3))
+        }
+        val intent = Intent(context, AboutUsActivity::class.java)
+        intent.putExtra("userId", sessionHolder.getActiveSession().myUserId)
+        context.startActivity(intent)
+    }
+
+    override fun openTerms(context: Context) {
+        val intent = Intent(context, DetailsActivity::class.java)
+        intent.putExtra("type", "terms")
+        intent.putExtra("title", "תנאי שימוש")
+        context.startActivity(intent)
+    }
+
+    override fun openTerms(context: Context,
+                           activityResultLauncher: ActivityResultLauncher<Intent>,
+                           serviceType: TermsService.ServiceType,
+                           baseUrl: String,
+                           token: String?) {
+        val intent = ReviewTermsActivity.intent(context, serviceType, baseUrl, token)
+        activityResultLauncher.launch(intent)
+    }
+
+    override fun openPolicy(context: Context) {
+        val intent = Intent(context, DetailsActivity::class.java)
+        intent.putExtra("type", "privacy_policy")
+        intent.putExtra("title", "פרטיות מדיניות")
+        context.startActivity(intent)
+    }
+
+    override fun openVolunteering(context: Context) {
+        AppEventsLogger.newLogger(context).logEvent("CRM")
+
+        val intent = Intent(context, WebViewActivity::class.java)
+        intent.putExtra("NAME", context.getString(R.string.to_volunteering))
+        intent.putExtra("URL", "https://gideonsaar.logivote.com/pages/a9a550109ed64027bda608d896bf09e0/index.html")
+
+        context.startActivity(intent)
+    }
+
+    override fun openDonation(context: Context) {
+        AppEventsLogger.newLogger(context).logEvent("Donation")
+
+        API.performLogEvent(LogEventBody("donation", "${sessionHolder.getActiveSession().myUserId}", 10))
+
+        val intent = Intent(context, WebViewActivity::class.java)
+        intent.putExtra("NAME", context.getString(R.string.to_donations))
+        intent.putExtra("URL", "https://gideonsaar-donate.logivote.com/form/donate")
+
+        context.startActivity(intent)
+    }
+
+    override fun openLeaderboard(context: Context) {
+        AppEventsLogger.newLogger(context).logEvent("Leaderboard")
+
+        val prefs = ContextInjector.applicationContext?.let { DefaultSharedPreferences.getInstance(it) }
+
+        if (prefs?.getBoolean("leader_first", true) == true) {
+
+            with(prefs.edit()) {
+                putBoolean("leader_first", false)
+                apply()
+            }
+
+
+            API.performLogEvent(LogEventBody("leader_first", "${sessionHolder.getActiveSession().myUserId}", 200))
+        } else {
+            API.performLogEvent(LogEventBody("leader", "${sessionHolder.getActiveSession().myUserId}", 20))
+        }
+
+        val intent = Intent(context, WebViewActivity::class.java)
+        intent.putExtra("NAME", context.getString(R.string.leaderboard))
+        intent.putExtra("URL", "https://identity.gidonline.e-lekt.com:4333/leaderboard")
+
+        context.startActivity(intent)
+    }
+
+    override fun openEula(context: Context) {
+        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse("http://translate.google.com/translate?sl=en&tl=iw&u=https%3A%2F%2Fwww.termsfeed.com%2Flive%2F82d20fe1-f065-4599-98d4-f54a1d71d8fd"))
+        context.startActivity(browserIntent)
+    }
+
     override fun openDebug(context: Context) {
         context.startActivity(Intent(context, DebugMenuActivity::class.java))
     }
@@ -264,15 +372,6 @@ class DefaultNavigator @Inject constructor(
                     }
                     activity.startActivity(intent, options?.toBundle())
                 }
-    }
-
-    override fun openTerms(context: Context,
-                           activityResultLauncher: ActivityResultLauncher<Intent>,
-                           serviceType: TermsService.ServiceType,
-                           baseUrl: String,
-                           token: String?) {
-        val intent = ReviewTermsActivity.intent(context, serviceType, baseUrl, token)
-        activityResultLauncher.launch(intent)
     }
 
     override fun openStickerPicker(context: Context,

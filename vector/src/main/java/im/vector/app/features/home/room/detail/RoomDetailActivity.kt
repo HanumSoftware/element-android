@@ -74,7 +74,7 @@ class RoomDetailActivity :
     }
 
     // Simple filter
-    var currentRoomId: String? = null
+    private var currentRoomId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

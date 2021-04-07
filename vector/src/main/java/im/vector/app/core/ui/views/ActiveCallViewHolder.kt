@@ -20,9 +20,10 @@ import android.view.View
 import androidx.cardview.widget.CardView
 import androidx.core.view.isVisible
 import im.vector.app.core.utils.DebouncedClickListener
+import im.vector.app.features.call.WebRtcPeerConnectionManager
 import org.matrix.android.sdk.api.session.call.CallState
-import im.vector.app.features.call.utils.EglUtils
-import im.vector.app.features.call.webrtc.WebRtcCall
+import org.matrix.android.sdk.api.session.call.EglUtils
+import org.matrix.android.sdk.api.session.call.MxCall
 import org.webrtc.RendererCommon
 import org.webrtc.SurfaceViewRenderer
 
@@ -31,28 +32,26 @@ class ActiveCallViewHolder {
     private var activeCallPiP: SurfaceViewRenderer? = null
     private var activeCallView: ActiveCallView? = null
     private var pipWrapper: CardView? = null
-    private var activeCall: WebRtcCall? = null
 
     private var activeCallPipInitialized = false
 
-    fun updateCall(activeCall: WebRtcCall?) {
-        this.activeCall = activeCall
-        val hasActiveCall = activeCall?.mxCall?.state is CallState.Connected
+    fun updateCall(activeCall: MxCall?, webRtcPeerConnectionManager: WebRtcPeerConnectionManager) {
+        val hasActiveCall = activeCall?.state is CallState.Connected
         if (hasActiveCall) {
-            val isVideoCall = activeCall?.mxCall?.isVideoCall == true
+            val isVideoCall = activeCall?.isVideoCall == true
             if (isVideoCall) initIfNeeded()
             activeCallView?.isVisible = !isVideoCall
             pipWrapper?.isVisible = isVideoCall
             activeCallPiP?.isVisible = isVideoCall
             activeCallPiP?.let {
-                activeCall?.attachViewRenderers(null, it, null)
+                webRtcPeerConnectionManager.attachViewRenderers(null, it, null)
             }
         } else {
             activeCallView?.isVisible = false
             activeCallPiP?.isVisible = false
             pipWrapper?.isVisible = false
             activeCallPiP?.let {
-                activeCall?.detachRenderers(listOf(it))
+                webRtcPeerConnectionManager.detachRenderers(listOf(it))
             }
         }
     }
@@ -83,9 +82,9 @@ class ActiveCallViewHolder {
         )
     }
 
-    fun unBind() {
+    fun unBind(webRtcPeerConnectionManager: WebRtcPeerConnectionManager) {
         activeCallPiP?.let {
-            activeCall?.detachRenderers(listOf(it))
+            webRtcPeerConnectionManager.detachRenderers(listOf(it))
         }
         if (activeCallPipInitialized) {
             activeCallPiP?.release()

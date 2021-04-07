@@ -16,16 +16,14 @@
 
 package org.matrix.android.sdk.api.session.call
 
-import org.matrix.android.sdk.api.session.room.model.call.CallCandidate
-import org.matrix.android.sdk.api.session.room.model.call.CallHangupContent
-import org.matrix.android.sdk.api.session.room.model.call.SdpType
-import org.matrix.android.sdk.api.util.Optional
+import org.webrtc.IceCandidate
+import org.webrtc.SessionDescription
 
 interface MxCallDetail {
     val callId: String
     val isOutgoing: Boolean
     val roomId: String
-    val opponentUserId: String
+    val otherUserId: String
     val isVideoCall: Boolean
 }
 
@@ -34,57 +32,40 @@ interface MxCallDetail {
  */
 interface MxCall : MxCallDetail {
 
-    companion object {
-        const val VOIP_PROTO_VERSION = 1
-    }
-
-    val ourPartyId: String
-    var opponentPartyId: Optional<String>?
-    var opponentVersion: Int
-
     var state: CallState
 
     /**
      * Pick Up the incoming call
      * It has no effect on outgoing call
      */
-    fun accept(sdpString: String)
-
-    /**
-     * SDP negotiation for media pause, hold/resume, ICE restarts and voice/video call up/downgrading
-     */
-    fun negotiate(sdpString: String, type: SdpType)
-
-    /**
-     * This has to be sent by the caller's client once it has chosen an answer.
-     */
-    fun selectAnswer()
+    fun accept(sdp: SessionDescription)
 
     /**
      * Reject an incoming call
+     * It's an alias to hangUp
      */
-    fun reject()
+    fun reject() = hangUp()
 
     /**
      * End the call
      */
-    fun hangUp(reason: CallHangupContent.Reason? = null)
+    fun hangUp()
 
     /**
      * Start a call
      * Send offer SDP to the other participant.
      */
-    fun offerSdp(sdpString: String)
+    fun offerSdp(sdp: SessionDescription)
 
     /**
      * Send Ice candidate to the other participant.
      */
-    fun sendLocalIceCandidates(candidates: List<CallCandidate>)
+    fun sendLocalIceCandidates(candidates: List<IceCandidate>)
 
     /**
      * Send removed ICE candidates to the other participant.
      */
-    fun sendLocalIceCandidateRemovals(candidates: List<CallCandidate>)
+    fun sendLocalIceCandidateRemovals(candidates: List<IceCandidate>)
 
     fun addListener(listener: StateListener)
     fun removeListener(listener: StateListener)

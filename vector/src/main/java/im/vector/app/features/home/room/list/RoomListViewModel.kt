@@ -33,13 +33,14 @@ import org.matrix.android.sdk.api.session.Session
 import org.matrix.android.sdk.api.session.room.model.Membership
 import org.matrix.android.sdk.api.session.room.model.RoomSummary
 import org.matrix.android.sdk.api.session.room.model.tag.RoomTag
+import org.matrix.android.sdk.api.session.room.state.isPublic
 import org.matrix.android.sdk.rx.rx
 import timber.log.Timber
 import java.lang.Exception
 import javax.inject.Inject
 
 class RoomListViewModel @Inject constructor(initialState: RoomListViewState,
-                                            private val session: Session,
+                                            val session: Session,
                                             private val roomSummariesSource: DataSource<List<RoomSummary>>)
     : VectorViewModel<RoomListViewState, RoomListAction, RoomListViewEvents>(initialState) {
 
@@ -76,6 +77,10 @@ class RoomListViewModel @Inject constructor(initialState: RoomListViewState,
             is RoomListAction.ChangeRoomNotificationState -> handleChangeNotificationMode(action)
             is RoomListAction.ToggleTag                   -> handleToggleTag(action)
         }.exhaustive
+    }
+
+    fun isPublicRoom(roomId: String): Boolean {
+        return session.getRoom(roomId)?.isPublic().orFalse()
     }
 
     // PRIVATE METHODS *****************************************************************************

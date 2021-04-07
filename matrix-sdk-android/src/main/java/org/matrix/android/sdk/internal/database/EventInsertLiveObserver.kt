@@ -71,6 +71,7 @@ internal class EventInsertLiveObserver @Inject constructor(@SessionDatabase real
                         return@forEach
                     }
                     val domainEvent = event.asDomain()
+//                    decryptIfNeeded(domainEvent)
                     processors.filter {
                         it.shouldProcess(eventId, domainEvent.getClearType(), eventInsert.insertType)
                     }.forEach {
@@ -82,7 +83,6 @@ internal class EventInsertLiveObserver @Inject constructor(@SessionDatabase real
                         .findAll()
                         .deleteAllFromRealm()
             }
-            processors.forEach { it.onPostProcess() }
         }
     }
 

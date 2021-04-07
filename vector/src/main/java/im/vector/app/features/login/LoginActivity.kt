@@ -40,12 +40,11 @@ import im.vector.app.core.extensions.exhaustive
 import im.vector.app.core.platform.ToolbarConfigurable
 import im.vector.app.core.platform.VectorBaseActivity
 import im.vector.app.databinding.ActivityLoginBinding
-import im.vector.app.features.home.HomeActivity
+import im.vector.app.features.home.IntroActivity
 import im.vector.app.features.login.terms.LoginTermsFragment
 import im.vector.app.features.login.terms.LoginTermsFragmentArgument
 import im.vector.app.features.login.terms.toLocalizedLoginTerms
 import im.vector.app.features.pin.UnlockedActivity
-
 import org.matrix.android.sdk.api.auth.registration.FlowResult
 import org.matrix.android.sdk.api.auth.registration.Stage
 import org.matrix.android.sdk.api.extensions.tryOrNull
@@ -204,11 +203,13 @@ open class LoginActivity : VectorBaseActivity<ActivityLoginBinding>(), ToolbarCo
 
     private fun updateWithState(loginViewState: LoginViewState) {
         if (loginViewState.isUserLogged()) {
-            val intent = HomeActivity.newIntent(
-                    this,
-                    accountCreation = loginViewState.signMode == SignMode.SignUp
-            )
+
+            val intent = Intent(this, IntroActivity::class.java)
+            intent.putExtra("signMode", loginViewState.signMode == SignMode.SignUp)
+            intent.putExtra("userId", loginViewModel.userId)
+
             startActivity(intent)
+
             finish()
             return
         }
@@ -359,6 +360,9 @@ open class LoginActivity : VectorBaseActivity<ActivityLoginBinding>(), ToolbarCo
         private const val FRAGMENT_LOGIN_TAG = "FRAGMENT_LOGIN_TAG"
 
         private const val EXTRA_CONFIG = "EXTRA_CONFIG"
+
+        // Note that the domain can be displayed to the user for confirmation that he trusts it. So use a human readable string
+        const val VECTOR_REDIRECT_URL = "element://connect"
 
         fun newIntent(context: Context, loginConfig: LoginConfig?): Intent {
             return Intent(context, LoginActivity::class.java).apply {

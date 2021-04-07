@@ -66,6 +66,14 @@ interface Navigator {
 
     fun openSettings(context: Context, directAccess: Int = VectorSettingsActivity.EXTRA_DIRECT_ACCESS_ROOT)
 
+    fun openAboutUs(context: Context)
+
+    fun openVolunteering(context: Context)
+
+    fun openDonation(context: Context)
+
+    fun openLeaderboard(context: Context)
+
     fun openDebug(context: Context)
 
     fun openKeysBackupSetup(context: Context, showManualExport: Boolean)
@@ -85,6 +93,12 @@ interface Navigator {
     fun openPinCode(context: Context,
                     activityResultLauncher: ActivityResultLauncher<Intent>,
                     pinMode: PinMode)
+
+    fun openTerms(context: Context)
+
+    fun openPolicy(context: Context)
+
+    fun openEula(context: Context)
 
     fun openTerms(context: Context,
                   activityResultLauncher: ActivityResultLauncher<Intent>,

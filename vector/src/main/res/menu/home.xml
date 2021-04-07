@@ -10,6 +10,7 @@
 
     <item
         android:id="@+id/menu_home_suggestion"
+        android:visible="false"
         android:icon="@drawable/ic_material_bug_report"
         android:title="@string/send_suggestion" />
 

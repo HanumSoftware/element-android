@@ -59,27 +59,27 @@ class RageShake @Inject constructor(private val activity: AppCompatActivity,
     }
 
     override fun hearShake() {
-        val i = interceptor
-        if (i != null) {
-            vibrate(activity)
-            i.invoke()
-        } else {
-            if (dialogDisplayed) {
-                // Filtered!
-                return
-            }
-
-            vibrate(activity)
-            dialogDisplayed = true
-
-            AlertDialog.Builder(activity)
-                    .setMessage(R.string.send_bug_report_alert_message)
-                    .setPositiveButton(R.string.yes) { _, _ -> openBugReportScreen() }
-                    .setNeutralButton(R.string.settings) { _, _ -> openSettings() }
-                    .setOnDismissListener { dialogDisplayed = false }
-                    .setNegativeButton(R.string.no, null)
-                    .show()
-        }
+//        val i = interceptor
+//        if (i != null) {
+//            vibrate(activity)
+//            i.invoke()
+//        } else {
+//            if (dialogDisplayed) {
+//                // Filtered!
+//                return
+//            }
+//
+//            vibrate(activity)
+//            dialogDisplayed = true
+//
+//            AlertDialog.Builder(activity)
+//                    .setMessage(R.string.send_bug_report_alert_message)
+//                    .setPositiveButton(R.string.yes) { _, _ -> openBugReportScreen() }
+//                    .setNeutralButton(R.string.settings) { _, _ -> openSettings() }
+//                    .setOnDismissListener { dialogDisplayed = false }
+//                    .setNegativeButton(R.string.no, null)
+//                    .show()
+//        }
     }
 
     private fun openBugReportScreen() {

@@ -131,23 +131,23 @@ class CreateRoomController @Inject constructor(
                 }
             }
         }
-        formAdvancedToggleItem {
-            id("showAdvanced")
-            title(stringProvider.getString(if (viewState.showAdvanced) R.string.hide_advanced else R.string.show_advanced))
-            expanded(!viewState.showAdvanced)
-            listener { listener?.toggleShowAdvanced() }
-        }
-        if (viewState.showAdvanced) {
-            formSwitchItem {
-                id("federation")
-                enabled(enableFormElement)
-                title(stringProvider.getString(R.string.create_room_disable_federation_title, viewState.homeServerName))
-                summary(stringProvider.getString(R.string.create_room_disable_federation_description))
-                switchChecked(viewState.disableFederation)
-                showDivider(false)
-                listener { value -> listener?.setDisableFederation(value) }
-            }
-        }
+//        formAdvancedToggleItem {
+//            id("showAdvanced")
+//            title(stringProvider.getString(if (viewState.showAdvanced) R.string.hide_advanced else R.string.show_advanced))
+//            expanded(!viewState.showAdvanced)
+//            listener { listener?.toggleShowAdvanced() }
+//        }
+//        if (viewState.showAdvanced) {
+//            formSwitchItem {
+//                id("federation")
+//                enabled(enableFormElement)
+//                title(stringProvider.getString(R.string.create_room_disable_federation_title, viewState.homeServerName))
+//                summary(stringProvider.getString(R.string.create_room_disable_federation_description))
+//                switchChecked(viewState.disableFederation)
+//                showDivider(false)
+//                listener { value -> listener?.setDisableFederation(value) }
+//            }
+//        }
         formSubmitButtonItem {
             id("submit")
             enabled(enableFormElement)

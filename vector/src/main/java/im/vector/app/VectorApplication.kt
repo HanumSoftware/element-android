@@ -44,7 +44,7 @@ import im.vector.app.core.di.HasVectorInjector
 import im.vector.app.core.di.VectorComponent
 import im.vector.app.core.extensions.configureAndStart
 import im.vector.app.core.rx.RxConfig
-import im.vector.app.features.call.webrtc.WebRtcCallManager
+import im.vector.app.features.call.WebRtcPeerConnectionManager
 import im.vector.app.features.configuration.VectorConfiguration
 import im.vector.app.features.disclaimer.doNotShowDisclaimerDialog
 import im.vector.app.features.lifecycle.VectorActivityLifecycleCallbacks
@@ -92,7 +92,7 @@ class VectorApplication :
     @Inject lateinit var rxConfig: RxConfig
     @Inject lateinit var popupAlertManager: PopupAlertManager
     @Inject lateinit var pinLocker: PinLocker
-    @Inject lateinit var callManager: WebRtcCallManager
+    @Inject lateinit var webRtcPeerConnectionManager: WebRtcPeerConnectionManager
 
     lateinit var vectorComponent: VectorComponent
 
@@ -111,6 +111,7 @@ class VectorApplication :
     override fun onCreate() {
         enableStrictModeIfNeeded()
         super.onCreate()
+        ContextInjector.applicationContext = this
         appContext = this
         vectorComponent = DaggerVectorComponent.factory().create(this)
         vectorComponent.inject(this)
@@ -157,6 +158,12 @@ class VectorApplication :
             val lastAuthenticatedSession = authenticationService.getLastAuthenticatedSession()!!
             activeSessionHolder.setActiveSession(lastAuthenticatedSession)
             lastAuthenticatedSession.configureAndStart(applicationContext)
+            activeSessionHolder.getActiveSession().getUserLive(activeSessionHolder.getActiveSession().myUserId).observeForever { user ->
+                user.getOrNull()?.let {
+                    API.displayName = it.displayName
+                    API.mediaId = it.avatarUrl?.replace("mxc://gidonline/", "")
+                }
+            }
         }
         ProcessLifecycleOwner.get().lifecycle.addObserver(object : LifecycleObserver {
             @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
@@ -177,7 +184,7 @@ class VectorApplication :
         })
         ProcessLifecycleOwner.get().lifecycle.addObserver(appStateHandler)
         ProcessLifecycleOwner.get().lifecycle.addObserver(pinLocker)
-        ProcessLifecycleOwner.get().lifecycle.addObserver(callManager)
+        ProcessLifecycleOwner.get().lifecycle.addObserver(webRtcPeerConnectionManager)
         // This should be done as early as possible
         // initKnownEmojiHashSet(appContext)
 

@@ -22,67 +22,39 @@ import com.airbnb.mvrx.MvRxViewModelFactory
 import com.airbnb.mvrx.Success
 import com.airbnb.mvrx.Uninitialized
 import com.airbnb.mvrx.ViewModelContext
-import com.squareup.inject.assisted.Assisted
-import com.squareup.inject.assisted.AssistedInject
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
+import dagger.assisted.AssistedFactory
 import im.vector.app.core.extensions.exhaustive
 import im.vector.app.core.platform.VectorViewModel
-import im.vector.app.features.call.webrtc.WebRtcCall
-import im.vector.app.features.call.webrtc.WebRtcCallManager
 import org.matrix.android.sdk.api.MatrixCallback
 import org.matrix.android.sdk.api.session.Session
 import org.matrix.android.sdk.api.session.call.CallState
 import org.matrix.android.sdk.api.session.call.MxCall
-import org.matrix.android.sdk.api.session.call.MxPeerConnectionState
 import org.matrix.android.sdk.api.session.call.TurnServerResponse
 import org.matrix.android.sdk.api.util.MatrixItem
 import org.matrix.android.sdk.api.util.toMatrixItem
+import org.webrtc.PeerConnection
 import java.util.Timer
 import java.util.TimerTask
 
 class VectorCallViewModel @AssistedInject constructor(
         @Assisted initialState: VectorCallViewState,
+        @Assisted val args: CallArgs,
         val session: Session,
-        val callManager: WebRtcCallManager,
+        val webRtcPeerConnectionManager: WebRtcPeerConnectionManager,
         val proximityManager: CallProximityManager
 ) : VectorViewModel<VectorCallViewState, VectorCallViewActions, VectorCallViewEvents>(initialState) {
 
-    private var call: WebRtcCall? = null
+    private var call: MxCall? = null
 
     private var connectionTimeoutTimer: Timer? = null
     private var hasBeenConnectedOnce = false
 
-    private val callListener = object : WebRtcCall.Listener {
-
-        override fun onHoldUnhold() {
-            setState {
-                copy(
-                        isLocalOnHold = call?.isLocalOnHold() ?: false,
-                        isRemoteOnHold = call?.remoteOnHold ?: false
-                )
-            }
-        }
-
-        override fun onCaptureStateChanged() {
-            setState {
-                copy(
-                        isVideoCaptureInError = call?.videoCapturerIsInError ?: false,
-                        isHD = call?.currentCaptureFormat() is CaptureFormat.HD
-                )
-            }
-        }
-
-        override fun onCameraChanged() {
-            setState {
-                copy(
-                        canSwitchCamera = call?.canSwitchCamera() ?: false,
-                        isFrontCamera = call?.currentCameraType() == CameraType.FRONT
-                )
-            }
-        }
-
+    private val callStateListener = object : MxCall.StateListener {
         override fun onStateUpdate(call: MxCall) {
             val callState = call.state
-            if (callState is CallState.Connected && callState.iceConnectionState == MxPeerConnectionState.CONNECTED) {
+            if (callState is CallState.Connected && callState.iceConnectionState == PeerConnection.PeerConnectionState.CONNECTED) {
                 hasBeenConnectedOnce = true
                 connectionTimeoutTimer?.cancel()
                 connectionTimeoutTimer = null
@@ -115,9 +87,8 @@ class VectorCallViewModel @AssistedInject constructor(
         }
     }
 
-    private val currentCallListener = object : WebRtcCallManager.CurrentCallListener {
-
-        override fun onCurrentCallChange(call: WebRtcCall?) {
+    private val currentCallListener = object : WebRtcPeerConnectionManager.CurrentCallListener {
+        override fun onCurrentCallChange(call: MxCall?) {
             // we need to check the state
             if (call == null) {
                 // we should dismiss, e.g handled by other session?
@@ -125,8 +96,17 @@ class VectorCallViewModel @AssistedInject constructor(
             }
         }
 
+        override fun onCaptureStateChanged() {
+            setState {
+                copy(
+                        isVideoCaptureInError = webRtcPeerConnectionManager.capturerIsInError,
+                        isHD = webRtcPeerConnectionManager.currentCaptureFormat() is CaptureFormat.HD
+                )
+            }
+        }
+
         override fun onAudioDevicesChange() {
-            val currentSoundDevice = callManager.callAudioManager.getCurrentSoundDevice()
+            val currentSoundDevice = webRtcPeerConnectionManager.callAudioManager.getCurrentSoundDevice()
             if (currentSoundDevice == CallAudioManager.SoundDevice.PHONE) {
                 proximityManager.start()
             } else {
@@ -135,95 +115,109 @@ class VectorCallViewModel @AssistedInject constructor(
 
             setState {
                 copy(
-                        availableSoundDevices = callManager.callAudioManager.getAvailableSoundDevices(),
+                        availableSoundDevices = webRtcPeerConnectionManager.callAudioManager.getAvailableSoundDevices(),
                         soundDevice = currentSoundDevice
+                )
+            }
+        }
+
+        override fun onCameraChange() {
+            setState {
+                copy(
+                        canSwitchCamera = webRtcPeerConnectionManager.canSwitchCamera(),
+                        isFrontCamera = webRtcPeerConnectionManager.currentCameraType() == CameraType.FRONT
                 )
             }
         }
     }
 
     init {
-        val webRtcCall = callManager.getCallById(initialState.callId)
-        if (webRtcCall == null) {
-            setState {
-                copy(callState = Fail(IllegalArgumentException("No call")))
-            }
-        } else {
-            call = webRtcCall
-            callManager.addCurrentCallListener(currentCallListener)
-            val item: MatrixItem? = session.getUser(webRtcCall.mxCall.opponentUserId)?.toMatrixItem()
-            webRtcCall.addListener(callListener)
-            val currentSoundDevice = callManager.callAudioManager.getCurrentSoundDevice()
-            if (currentSoundDevice == CallAudioManager.SoundDevice.PHONE) {
-                proximityManager.start()
-            }
-            setState {
-                copy(
-                        isVideoCall = webRtcCall.mxCall.isVideoCall,
-                        callState = Success(webRtcCall.mxCall.state),
-                        otherUserMatrixItem = item?.let { Success(it) } ?: Uninitialized,
-                        soundDevice = currentSoundDevice,
-                        availableSoundDevices = callManager.callAudioManager.getAvailableSoundDevices(),
-                        isFrontCamera = call?.currentCameraType() == CameraType.FRONT,
-                        canSwitchCamera = call?.canSwitchCamera() ?: false,
-                        isHD = webRtcCall.mxCall.isVideoCall && webRtcCall.currentCaptureFormat() is CaptureFormat.HD
-                )
+        initialState.callId?.let {
+            webRtcPeerConnectionManager.addCurrentCallListener(currentCallListener)
+
+            session.callSignalingService().getCallWithId(it)?.let { mxCall ->
+                this.call = mxCall
+                mxCall.otherUserId
+                val item: MatrixItem? = session.getRoomMember(mxCall.otherUserId, mxCall.roomId)?.toMatrixItem()
+
+                mxCall.addListener(callStateListener)
+
+                val currentSoundDevice = webRtcPeerConnectionManager.callAudioManager.getCurrentSoundDevice()
+                if (currentSoundDevice == CallAudioManager.SoundDevice.PHONE) {
+                    proximityManager.start()
+                }
+
+                setState {
+                    copy(
+                            isVideoCall = mxCall.isVideoCall,
+                            callState = Success(mxCall.state),
+                            otherUserMatrixItem = item?.let { Success(it) } ?: Uninitialized,
+                            soundDevice = currentSoundDevice,
+                            availableSoundDevices = webRtcPeerConnectionManager.callAudioManager.getAvailableSoundDevices(),
+                            isFrontCamera = webRtcPeerConnectionManager.currentCameraType() == CameraType.FRONT,
+                            canSwitchCamera = webRtcPeerConnectionManager.canSwitchCamera(),
+                            isHD = mxCall.isVideoCall && webRtcPeerConnectionManager.currentCaptureFormat() is CaptureFormat.HD
+                    )
+                }
+            } ?: run {
+                setState {
+                    copy(
+                            callState = Fail(IllegalArgumentException("No call"))
+                    )
+                }
             }
         }
     }
 
     override fun onCleared() {
-        callManager.removeCurrentCallListener(currentCallListener)
-        call?.removeListener(callListener)
+        // session.callService().removeCallListener(callServiceListener)
+        webRtcPeerConnectionManager.removeCurrentCallListener(currentCallListener)
+        this.call?.removeListener(callStateListener)
         proximityManager.stop()
         super.onCleared()
     }
 
     override fun handle(action: VectorCallViewActions) = withState { state ->
         when (action) {
-            VectorCallViewActions.EndCall -> call?.endCall()
-            VectorCallViewActions.AcceptCall -> {
+            VectorCallViewActions.EndCall              -> webRtcPeerConnectionManager.endCall()
+            VectorCallViewActions.AcceptCall           -> {
                 setState {
                     copy(callState = Loading())
                 }
-                call?.acceptIncomingCall()
+                webRtcPeerConnectionManager.acceptIncomingCall()
             }
-            VectorCallViewActions.DeclineCall -> {
+            VectorCallViewActions.DeclineCall          -> {
                 setState {
                     copy(callState = Loading())
                 }
-                call?.endCall()
+                webRtcPeerConnectionManager.endCall()
             }
-            VectorCallViewActions.ToggleMute -> {
+            VectorCallViewActions.ToggleMute           -> {
                 val muted = state.isAudioMuted
-                call?.muteCall(!muted)
+                webRtcPeerConnectionManager.muteCall(!muted)
                 setState {
                     copy(isAudioMuted = !muted)
                 }
             }
-            VectorCallViewActions.ToggleVideo -> {
+            VectorCallViewActions.ToggleVideo          -> {
                 if (state.isVideoCall) {
                     val videoEnabled = state.isVideoEnabled
-                    call?.enableVideo(!videoEnabled)
+                    webRtcPeerConnectionManager.enableVideo(!videoEnabled)
                     setState {
                         copy(isVideoEnabled = !videoEnabled)
                     }
                 }
                 Unit
             }
-            VectorCallViewActions.ToggleHoldResume -> {
-                val isRemoteOnHold = state.isRemoteOnHold
-                call?.updateRemoteOnHold(!isRemoteOnHold)
-            }
             is VectorCallViewActions.ChangeAudioDevice -> {
-                callManager.callAudioManager.setCurrentSoundDevice(action.device)
+                webRtcPeerConnectionManager.callAudioManager.setCurrentSoundDevice(action.device)
                 setState {
                     copy(
-                            soundDevice = callManager.callAudioManager.getCurrentSoundDevice()
+                            soundDevice = webRtcPeerConnectionManager.callAudioManager.getCurrentSoundDevice()
                     )
                 }
             }
-            VectorCallViewActions.SwitchSoundDevice -> {
+            VectorCallViewActions.SwitchSoundDevice    -> {
                 _viewEvents.post(
                         VectorCallViewEvents.ShowSoundDeviceChooser(state.availableSoundDevices, state.soundDevice)
                 )
@@ -231,35 +225,45 @@ class VectorCallViewModel @AssistedInject constructor(
             VectorCallViewActions.HeadSetButtonPressed -> {
                 if (state.callState.invoke() is CallState.LocalRinging) {
                     // accept call
-                    call?.acceptIncomingCall()
+                    webRtcPeerConnectionManager.acceptIncomingCall()
                 }
                 if (state.callState.invoke() is CallState.Connected) {
                     // end call?
-                    call?.endCall()
+                    webRtcPeerConnectionManager.endCall()
                 }
                 Unit
             }
-            VectorCallViewActions.ToggleCamera -> {
-                call?.switchCamera()
+            VectorCallViewActions.ToggleCamera         -> {
+                webRtcPeerConnectionManager.switchCamera()
             }
-            VectorCallViewActions.ToggleHDSD -> {
+            VectorCallViewActions.ToggleHDSD           -> {
                 if (!state.isVideoCall) return@withState
-                call?.setCaptureFormat(if (state.isHD) CaptureFormat.SD else CaptureFormat.HD)
+                webRtcPeerConnectionManager.setCaptureFormat(if (state.isHD) CaptureFormat.SD else CaptureFormat.HD)
             }
         }.exhaustive
     }
 
-    @AssistedInject.Factory
+    @AssistedFactory
     interface Factory {
-        fun create(initialState: VectorCallViewState): VectorCallViewModel
+        fun create(initialState: VectorCallViewState, args: CallArgs): VectorCallViewModel
     }
 
     companion object : MvRxViewModelFactory<VectorCallViewModel, VectorCallViewState> {
 
         @JvmStatic
-        override fun create(viewModelContext: ViewModelContext, state: VectorCallViewState): VectorCallViewModel {
+        override fun create(viewModelContext: ViewModelContext, state: VectorCallViewState): VectorCallViewModel? {
             val callActivity: VectorCallActivity = viewModelContext.activity()
-            return callActivity.viewModelFactory.create(state)
+            val callArgs: CallArgs = viewModelContext.args()
+            return callActivity.viewModelFactory.create(state, callArgs)
+        }
+
+        override fun initialState(viewModelContext: ViewModelContext): VectorCallViewState? {
+            val args: CallArgs = viewModelContext.args()
+            return VectorCallViewState(
+                    callId = args.callId,
+                    roomId = args.roomId,
+                    isVideoCall = args.isVideoCall
+            )
         }
     }
 }

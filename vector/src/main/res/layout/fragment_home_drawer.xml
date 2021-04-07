@@ -11,11 +11,16 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/homeDrawerHeader"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?riotx_base"
+        android:layout_height="160dp"
+        android:background="@drawable/logo_animation"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/animation_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
 
         <ImageView
             android:id="@+id/homeDrawerHeaderDebugView"
@@ -29,17 +34,6 @@
             app:tint="@color/riotx_accent"
             tools:ignore="MissingPrefix" />
 
-        <ImageView
-            android:id="@+id/homeDrawerHeaderAvatarView"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_marginStart="@dimen/layout_horizontal_margin"
-            android:layout_marginTop="24dp"
-            android:transitionName="profile"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:src="@tools:sample/avatars" />
-
         <TextView
             android:id="@+id/homeDrawerUsernameView"
             android:layout_width="0dp"
@@ -48,26 +42,27 @@
             android:layout_marginEnd="8dp"
             android:maxLines="1"
             android:singleLine="true"
-            android:textColor="?riotx_text_primary"
+            android:textColor="@color/white"
             android:textSize="15sp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@id/homeDrawerUserIdView"
             app:layout_constraintEnd_toStartOf="@+id/homeDrawerQRCodeButton"
-            app:layout_constraintStart_toStartOf="@+id/homeDrawerHeaderAvatarView"
-            app:layout_constraintTop_toBottomOf="@+id/homeDrawerHeaderAvatarView"
             tools:text="@sample/matrix.json/data/displayName" />
 
         <TextView
             android:id="@+id/homeDrawerUserIdView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
             android:maxLines="1"
             android:singleLine="true"
-            android:textColor="?riotx_text_secondary"
+            android:textColor="@color/white"
             android:textSize="15sp"
-            app:layout_constraintBottom_toTopOf="@+id/homeDrawerInviteFriendButton"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/homeDrawerQRCodeButton"
-            app:layout_constraintStart_toStartOf="@+id/homeDrawerHeaderAvatarView"
-            app:layout_constraintTop_toBottomOf="@+id/homeDrawerUsernameView"
+            app:layout_constraintStart_toStartOf="parent"
             tools:text="@sample/matrix.json/data/mxid" />
 
         <com.google.android.material.button.MaterialButton
@@ -84,6 +79,7 @@
             android:insetRight="0dp"
             android:insetBottom="0dp"
             android:padding="0dp"
+            android:visibility="gone"
             app:cornerRadius="17dp"
             app:icon="@drawable/ic_qr_code_add"
             app:iconGravity="textStart"
@@ -93,86 +89,304 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/homeDrawerUsernameView" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/homeDrawerInviteFriendButton"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
-            android:layout_width="wrap_content"
-            android:layout_height="36dp"
-            android:layout_marginStart="@dimen/layout_horizontal_margin"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="@dimen/layout_horizontal_margin"
-            android:layout_marginBottom="8dp"
-            android:gravity="center"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            android:padding="0dp"
-            android:text="@string/invite_friends"
-            android:textAllCaps="false"
-            android:textColor="?colorAccent"
-            android:textSize="13sp"
-            app:icon="@drawable/ic_share"
-            app:iconGravity="textStart"
-            app:iconSize="20dp"
-            app:iconTint="?colorAccent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/homeDrawerUserIdView" />
-
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <LinearLayout
+        android:id="@+id/menu_items"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/homeDrawerHeader">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/leaderboard_btn"
+            android:layout_width="match_parent"
+            android:layout_height="80dp">
+
+            <ImageView
+                android:id="@+id/homeDrawerHeaderAvatarView"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="@dimen/layout_horizontal_margin"
+                android:transitionName="profile"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:src="@tools:sample/avatars" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:orientation="vertical"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/homeDrawerHeaderAvatarView"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <TextView
+                    android:id="@+id/score"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="24dp"
+                    android:layout_marginTop="8dp"
+                    android:textColor="@color/black"
+                    android:textSize="16dp"
+                    android:textStyle="bold"
+                    tools:text="0 נקודות" />
+
+                <TextView
+                    android:id="@+id/role"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="24dp"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginBottom="2dp"
+                    android:textSize="14dp"
+                    tools:text="ראש העיר" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="24dp"
+                    android:text="לחץ לצפיה בטבלת הניקוד"
+                    android:textSize="12dp" />
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="?attr/colorPrimary"
+                app:layout_constraintBottom_toBottomOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <TextView
+            android:id="@+id/about_us"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground"
+            android:drawablePadding="9dp"
+            android:gravity="center_vertical"
+            android:minWidth="120dp"
+            android:minHeight="40dp"
+            android:padding="10dp"
+            android:text="@string/about_us"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:tint="@color/black"
+            app:drawableStartCompat="@drawable/ic_star_24dp"
+            app:drawableTint="@color/black"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="?attr/colorPrimary" />
+
+        <TextView
+            android:id="@+id/homeDrawerInviteFriendButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground"
+            android:drawablePadding="9dp"
+            android:gravity="center_vertical"
+            android:maxLines="1"
+            android:minWidth="120dp"
+            android:minHeight="40dp"
+            android:padding="10dp"
+            android:text="@string/invite_friends"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:tint="@color/black"
+            app:drawableStartCompat="@drawable/ic_share"
+            app:drawableTint="@color/black" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="?attr/colorPrimary" />
+
+        <TextView
+            android:id="@+id/donations_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground"
+            android:drawablePadding="9dp"
+            android:gravity="center_vertical"
+            android:minWidth="120dp"
+            android:minHeight="40dp"
+            android:padding="10dp"
+            android:text="@string/to_donations"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:tint="@color/black"
+            app:drawableStartCompat="@drawable/donate_ic"
+            app:drawableTint="@color/black" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="?attr/colorPrimary" />
+
+        <TextView
+            android:id="@+id/volunteer_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground"
+            android:drawablePadding="9dp"
+            android:gravity="center_vertical"
+            android:minWidth="120dp"
+            android:minHeight="40dp"
+            android:padding="10dp"
+            android:text="@string/to_volunteering"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:tint="@color/black"
+            app:drawableStartCompat="@drawable/ic_together"
+            app:drawableTint="@color/black" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="?attr/colorPrimary" />
+
+        <TextView
+            android:id="@+id/homeDrawerHeaderSettingsView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground"
+            android:drawablePadding="9dp"
+            android:gravity="center_vertical"
+            android:minWidth="120dp"
+            android:minHeight="40dp"
+            android:padding="10dp"
+            android:text="@string/settings"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:tint="@color/black"
+            app:drawableStartCompat="@drawable/ic_settings_18dp"
+            app:drawableTint="@color/black"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="?attr/colorPrimary" />
+
+        <TextView
+            android:id="@+id/support_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground"
+            android:drawablePadding="9dp"
+            android:gravity="center_vertical"
+            android:minWidth="120dp"
+            android:minHeight="40dp"
+            android:padding="10dp"
+            android:text="@string/support"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:tint="@color/black"
+            app:drawableStartCompat="@drawable/ic_headphones"
+            app:drawableTint="@color/black" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+
+            android:background="?attr/colorPrimary" />
+
+        <TextView
+            android:id="@+id/homeDrawerHeaderSignoutView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground"
+            android:drawablePadding="9dp"
+            android:gravity="center_vertical"
+            android:minWidth="120dp"
+            android:minHeight="40dp"
+            android:padding="10dp"
+            android:text="@string/logout"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:tint="@color/black"
+            app:drawableStartCompat="@drawable/ic_logout"
+            app:drawableTint="@color/black"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    </LinearLayout>
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/homeDrawerGroupListContainer"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/homeDrawerBottomSeparator"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/homeDrawerHeader" />
 
-    <View
-        android:id="@+id/homeDrawerBottomSeparator"
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="?attr/vctr_list_divider_color"
-        app:layout_constraintBottom_toTopOf="@+id/homeDrawerHeaderSettingsView" />
-
-    <TextView
-        android:id="@+id/homeDrawerHeaderSettingsView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="?attr/selectableItemBackground"
-        android:drawablePadding="9dp"
-        android:gravity="center_vertical"
-        android:minWidth="120dp"
-        android:minHeight="52dp"
-        android:padding="16dp"
-        android:text="@string/settings"
-        android:textSize="14sp"
-        android:tint="?riotx_android_secondary"
-        app:drawableStartCompat="@drawable/ic_settings_18dp"
-        app:drawableTint="?riotx_android_secondary"
+        android:layout_height="70dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/menu_items">
 
-    <TextView
-        android:id="@+id/homeDrawerHeaderSignoutView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="?attr/selectableItemBackground"
-        android:drawablePadding="9dp"
-        android:gravity="center_vertical"
-        android:minWidth="120dp"
-        android:minHeight="52dp"
-        android:padding="16dp"
-        android:text="@string/logout"
-        android:textSize="14sp"
-        android:tint="?riotx_android_secondary"
-        app:drawableStartCompat="@drawable/ic_signout_18dp"
-        app:drawableTint="?riotx_android_secondary"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        <ImageView
+            android:id="@+id/youtube_btn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:src="@drawable/ic_youtube" />
+
+        <ImageView
+            android:id="@+id/telegram_btn"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:src="@drawable/ic_telegram" />
+
+        <ImageView
+            android:id="@+id/twitter_btn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:src="@drawable/ic_twitter" />
+
+        <ImageView
+            android:id="@+id/instagram_btn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:src="@drawable/ic_instagram" />
+
+        <ImageView
+            android:id="@+id/facebook_btn"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:src="@drawable/ic_facebook" />
+
+    </LinearLayout>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

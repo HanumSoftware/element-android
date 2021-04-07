@@ -21,10 +21,14 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.view.View
+import android.widget.ImageView
 import com.tapadoo.alerter.Alerter
+import com.tapadoo.alerter.OnHideAlertListener
+import dagger.Lazy
 import im.vector.app.R
 import im.vector.app.core.platform.VectorBaseActivity
 import im.vector.app.core.utils.isAnimationDisabled
+import im.vector.app.features.home.AvatarRenderer
 import im.vector.app.features.pin.PinActivity
 import im.vector.app.features.themes.ThemeUtils
 import timber.log.Timber
@@ -34,25 +38,19 @@ import javax.inject.Singleton
 
 /**
  * Responsible of displaying important popup alerts on top of the screen.
- * Alerts are stacked and will be displayed sequentially but sorted by priority.
- * So if a new alert is posted with a higher priority than the current one it will show it instead and the current one
- * will be back in the queue in first position.
+ * Alerts are stacked and will be displayed sequentially
  */
 @Singleton
-class PopupAlertManager @Inject constructor() {
-
-    companion object {
-        const val INCOMING_CALL_PRIORITY = Int.MAX_VALUE
-    }
+class PopupAlertManager @Inject constructor(private val avatarRenderer: Lazy<AvatarRenderer>) {
 
     private var weakCurrentActivity: WeakReference<Activity>? = null
     private var currentAlerter: VectorAlert? = null
 
-    private val alertQueue = mutableListOf<VectorAlert>()
+    private val alertFiFo = mutableListOf<VectorAlert>()
 
     fun postVectorAlert(alert: VectorAlert) {
-        synchronized(alertQueue) {
-            alertQueue.add(alert)
+        synchronized(alertFiFo) {
+            alertFiFo.add(alert)
         }
         weakCurrentActivity?.get()?.runOnUiThread {
             displayNextIfPossible()
@@ -60,8 +58,8 @@ class PopupAlertManager @Inject constructor() {
     }
 
     fun cancelAlert(uid: String) {
-        synchronized(alertQueue) {
-            alertQueue.listIterator().apply {
+        synchronized(alertFiFo) {
+            alertFiFo.listIterator().apply {
                 while (this.hasNext()) {
                     val next = this.next()
                     if (next.uid == uid) {
@@ -84,8 +82,8 @@ class PopupAlertManager @Inject constructor() {
      * Cancel all alerts, after a sign out for instance
      */
     fun cancelAll() {
-        synchronized(alertQueue) {
-            alertQueue.clear()
+        synchronized(alertFiFo) {
+            alertFiFo.clear()
         }
 
         // Cancel any displayed alert
@@ -100,9 +98,7 @@ class PopupAlertManager @Inject constructor() {
         if (currentAlerter != null) {
             weakCurrentActivity?.get()?.let {
                 Alerter.clearCurrent(it)
-                if (currentAlerter?.isLight == false) {
-                    setLightStatusBar()
-                }
+                setLightStatusBar()
             }
         }
         weakCurrentActivity = WeakReference(activity)
@@ -139,19 +135,9 @@ class PopupAlertManager @Inject constructor() {
             return
         }
         val next: VectorAlert?
-        synchronized(alertQueue) {
-            next = alertQueue.maxByOrNull { it.priority }
-            // If next alert with highest priority is higher than the current one, we should display it
-            // and add the current one to queue again.
-            if (next != null && next.priority > currentAlerter?.priority ?: Int.MIN_VALUE) {
-                alertQueue.remove(next)
-                currentAlerter?.also {
-                    alertQueue.add(0, it)
-                }
-            } else {
-                // otherwise, we don't do anything
-                return
-            }
+        synchronized(alertFiFo) {
+            next = alertFiFo.firstOrNull()
+            if (next != null) alertFiFo.remove(next)
         }
         currentAlerter = next
         next?.let {
@@ -200,19 +186,22 @@ class PopupAlertManager @Inject constructor() {
     }
 
     private fun showAlert(alert: VectorAlert, activity: Activity, animate: Boolean = true) {
-        if (!alert.isLight) {
-            clearLightStatusBar()
-        }
+        clearLightStatusBar()
+
         val noAnimation = !animate || isAnimationDisabled(activity)
 
         alert.weakCurrentActivity = WeakReference(activity)
-        val alerter = Alerter.create(activity, alert.layoutRes)
+        val alerter = if (alert is VerificationVectorAlert) Alerter.create(activity, R.layout.alerter_verification_layout)
+        else Alerter.create(activity)
 
         alerter.setTitle(alert.title)
                 .setText(alert.description)
                 .also { al ->
-                    al.getLayoutContainer()?.also {
-                        alert.viewBinder?.bind(it)
+                    if (alert is VerificationVectorAlert) {
+                        val tvCustomView = al.getLayoutContainer()
+                        tvCustomView?.findViewById<ImageView>(R.id.ivUserAvatar)?.let { imageView ->
+                            alert.matrixItem?.let { avatarRenderer.get().render(it, imageView) }
+                        }
                     }
                 }
                 .apply {
@@ -224,7 +213,7 @@ class PopupAlertManager @Inject constructor() {
                         setIcon(it)
                     }
                     alert.actions.forEach { action ->
-                        addButton(action.title, R.style.AlerterButton) {
+                        addButton(action.title, R.style.AlerterButton, View.OnClickListener {
                             if (action.autoClose) {
                                 currentIsDismissed()
                                 Alerter.hide()
@@ -234,23 +223,21 @@ class PopupAlertManager @Inject constructor() {
                             } catch (e: java.lang.Exception) {
                                 Timber.e("## failed to perform action")
                             }
-                        }
+                        })
                     }
-                    setOnClickListener { _ ->
+                    setOnClickListener(View.OnClickListener { _ ->
                         alert.contentAction?.let {
-                            if (alert.dismissOnClick) {
-                                currentIsDismissed()
-                                Alerter.hide()
-                            }
+                            currentIsDismissed()
+                            Alerter.hide()
                             try {
                                 it.run()
                             } catch (e: java.lang.Exception) {
                                 Timber.e("## failed to perform action")
                             }
                         }
-                    }
+                    })
                 }
-                .setOnHideListener {
+                .setOnHideListener(OnHideAlertListener {
                     // called when dismissed on swipe
                     try {
                         alert.dismissedAction?.run()
@@ -258,14 +245,12 @@ class PopupAlertManager @Inject constructor() {
                         Timber.e("## failed to perform action")
                     }
                     currentIsDismissed()
-                }
+                })
                 .enableSwipeToDismiss()
                 .enableInfiniteDuration(true)
                 .apply {
                     if (alert.colorInt != null) {
                         setBackgroundColorInt(alert.colorInt!!)
-                    } else if (alert.colorAttribute != null) {
-                        setBackgroundColorInt(ThemeUtils.getColor(activity, alert.colorAttribute!!))
                     } else {
                         setBackgroundColorRes(alert.colorRes ?: R.color.notification_accent_color)
                     }
@@ -276,9 +261,8 @@ class PopupAlertManager @Inject constructor() {
 
     private fun currentIsDismissed() {
         // current alert has been hidden
-        if (currentAlerter?.isLight == false) {
-            setLightStatusBar()
-        }
+        setLightStatusBar()
+
         currentAlerter = null
         Handler(Looper.getMainLooper()).postDelayed({
             displayNextIfPossible()

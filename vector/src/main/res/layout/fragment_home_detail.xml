@@ -24,9 +24,9 @@
             <ImageView
                 android:id="@+id/groupToolbarAvatarImageView"
                 android:layout_width="32dp"
+                android:src="@drawable/hamburger_icon"
                 android:layout_height="32dp"
-                android:contentDescription="@string/a11y_open_drawer"
-                tools:src="@tools:sample/avatars" />
+                android:contentDescription="@string/a11y_open_drawer" />
 
             <TextView
                 android:id="@+id/groupToolbarTitleView"

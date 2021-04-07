@@ -51,21 +51,20 @@ class LoginSignUpSignInSelectionFragment @Inject constructor() : AbstractSSOLogi
     private fun setupUi(state: LoginViewState) {
         when (state.serverType) {
             ServerType.MatrixOrg -> {
-                views.loginSignupSigninServerIcon.setImageResource(R.drawable.ic_logo_matrix_org)
-                views.loginSignupSigninServerIcon.isVisible = true
-                views.loginSignupSigninTitle.text = getString(R.string.login_connect_to, state.homeServerUrl.toReducedUrl())
+//                views.loginSignupSigninServerIcon.isVisible = true
+                views.loginSignupSigninTitle.text = getString(R.string.login_connect_to)
                 views.loginSignupSigninText.text = getString(R.string.login_server_matrix_org_text)
             }
             ServerType.EMS       -> {
-                views.loginSignupSigninServerIcon.setImageResource(R.drawable.ic_logo_element_matrix_services)
-                views.loginSignupSigninServerIcon.isVisible = true
+//                views.loginSignupSigninServerIcon.setImageResource(R.drawable.ic_logo_element_matrix_services)
+//                views.loginSignupSigninServerIcon.isVisible = true
                 views.loginSignupSigninTitle.text = getString(R.string.login_connect_to_modular)
                 views.loginSignupSigninText.text = state.homeServerUrl.toReducedUrl()
             }
             ServerType.Other     -> {
-                views.loginSignupSigninServerIcon.isVisible = false
+//                views.loginSignupSigninServerIcon.isVisible = false
                 views.loginSignupSigninTitle.text = getString(R.string.login_server_other_title)
-                views.loginSignupSigninText.text = getString(R.string.login_connect_to, state.homeServerUrl.toReducedUrl())
+                views.loginSignupSigninText.text = getString(R.string.login_connect_to)
             }
             ServerType.Unknown   -> Unit /* Should not happen */
         }
@@ -76,8 +75,12 @@ class LoginSignUpSignInSelectionFragment @Inject constructor() : AbstractSSOLogi
                 views.loginSignupSigninSocialLoginButtons.ssoIdentityProviders = state.loginMode.ssoIdentityProviders()
                 views.loginSignupSigninSocialLoginButtons.listener = object : SocialLoginButtonsView.InteractionListener {
                     override fun onProviderSelected(id: String?) {
-                        val url = withState(loginViewModel) { it.getSsoUrl(id) }
-                        openInCustomTab(url)
+                        loginViewModel.getSsoUrl(
+                                redirectUrl = LoginActivity.VECTOR_REDIRECT_URL,
+                                deviceId = state.deviceId,
+                                providerId = id
+                        )
+                                ?.let { openInCustomTab(it) }
                     }
                 }
             }
@@ -105,7 +108,12 @@ class LoginSignUpSignInSelectionFragment @Inject constructor() : AbstractSSOLogi
 
     private fun submit() = withState(loginViewModel) { state ->
         if (state.loginMode is LoginMode.Sso) {
-            openInCustomTab(state.getSsoUrl(null))
+            loginViewModel.getSsoUrl(
+                    redirectUrl = LoginActivity.VECTOR_REDIRECT_URL,
+                    deviceId = state.deviceId,
+                    providerId = null
+            )
+                    ?.let { openInCustomTab(it) }
         } else {
             loginViewModel.handle(LoginAction.UpdateSignMode(SignMode.SignUp))
         }

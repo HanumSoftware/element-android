@@ -39,7 +39,7 @@ import im.vector.app.core.ui.views.KeysBackupBanner
 import im.vector.app.databinding.FragmentHomeDetailBinding
 import im.vector.app.features.call.SharedActiveCallViewModel
 import im.vector.app.features.call.VectorCallActivity
-import im.vector.app.features.call.webrtc.WebRtcCallManager
+import im.vector.app.features.call.WebRtcPeerConnectionManager
 import im.vector.app.features.home.room.list.RoomListFragment
 import im.vector.app.features.home.room.list.RoomListParams
 import im.vector.app.features.popup.PopupAlertManager
@@ -66,7 +66,7 @@ class HomeDetailFragment @Inject constructor(
         private val serverBackupStatusViewModelFactory: ServerBackupStatusViewModel.Factory,
         private val avatarRenderer: AvatarRenderer,
         private val alertManager: PopupAlertManager,
-        private val callManager: WebRtcCallManager,
+        private val webRtcPeerConnectionManager: WebRtcPeerConnectionManager,
         private val vectorPreferences: VectorPreferences
 ) : VectorBaseFragment<FragmentHomeDetailBinding>(),
         KeysBackupBanner.Delegate,
@@ -129,7 +129,7 @@ class HomeDetailFragment @Inject constructor(
         sharedCallActionViewModel
                 .activeCall
                 .observe(viewLifecycleOwner, Observer {
-                    activeCallViewHolder.updateCall(it)
+                    activeCallViewHolder.updateCall(it, webRtcPeerConnectionManager)
                     invalidateOptionsMenu()
                 })
     }
@@ -160,9 +160,9 @@ class HomeDetailFragment @Inject constructor(
                         uid = uid,
                         title = getString(R.string.new_session),
                         description = getString(R.string.verify_this_session, newest.displayName ?: newest.deviceId ?: ""),
-                        iconId = R.drawable.ic_shield_warning
+                        iconId = R.drawable.ic_shield_warning,
+                        matrixItem = user
                 ).apply {
-                    viewBinder = VerificationVectorAlert.ViewBinder(user, avatarRenderer)
                     colorInt = ContextCompat.getColor(requireActivity(), R.color.riotx_accent)
                     contentAction = Runnable {
                         (weakCurrentActivity?.get() as? VectorBaseActivity<*>)
@@ -188,9 +188,9 @@ class HomeDetailFragment @Inject constructor(
                         uid = uid,
                         title = getString(R.string.review_logins),
                         description = getString(R.string.verify_other_sessions),
-                        iconId = R.drawable.ic_shield_warning
+                        iconId = R.drawable.ic_shield_warning,
+                        matrixItem = user
                 ).apply {
-                    viewBinder = VerificationVectorAlert.ViewBinder(user, avatarRenderer)
                     colorInt = ContextCompat.getColor(requireActivity(), R.color.riotx_accent)
                     contentAction = Runnable {
                         (weakCurrentActivity?.get() as? VectorBaseActivity<*>)?.let {
@@ -213,7 +213,7 @@ class HomeDetailFragment @Inject constructor(
     private fun onGroupChange(groupSummary: GroupSummary?) {
         groupSummary?.let {
             // Use GlideApp with activity context to avoid the glideRequests to be paused
-            avatarRenderer.render(it.toMatrixItem(), views.groupToolbarAvatarImageView, GlideApp.with(requireActivity()))
+//            avatarRenderer.render(it.toMatrixItem(), views.groupToolbarAvatarImageView, GlideApp.with(requireActivity()))
         }
     }
 
@@ -340,10 +340,10 @@ class HomeDetailFragment @Inject constructor(
             VectorCallActivity.newIntent(
                     context = requireContext(),
                     callId = call.callId,
-                    roomId = call.mxCall.roomId,
-                    otherUserId = call.mxCall.opponentUserId,
-                    isIncomingCall = !call.mxCall.isOutgoing,
-                    isVideoCall = call.mxCall.isVideoCall,
+                    roomId = call.roomId,
+                    otherUserId = call.otherUserId,
+                    isIncomingCall = !call.isOutgoing,
+                    isVideoCall = call.isVideoCall,
                     mode = null
             ).let {
                 startActivity(it)
